@@ -26,20 +26,33 @@ journal's **Export CSV** for backups.
 
 The same setup — uptrend (EMA 9/21 + VWAP), pullback into the 0.618 golden
 pocket, a hammer rejection at the level, then entry with a defined stop and
-target — playing out to both outcomes. Indicators, the pocket highlight, the
-hammer glow, the entry/stop/target draw-in, and an RSI panel are all shown.
+target — playing out to both outcomes on every market, with real price levels.
+Indicators, the pocket highlight, the hammer glow, the entry/stop/target
+draw-in, and an RSI panel are all shown.
 
-**Winner (+5R):**
+Within each market, the winner and the loser share an **identical entry** — you
+can't tell them apart in advance. That's the point: the edge is a small,
+pre-planned stop and letting winners run, not prediction. Notice the geometry is
+the same across oil, the S&P, and Bitcoin — one method, every market — only the
+price scale changes.
 
-![Winning trade end-to-end](media/trade-win.gif)
+### Oil — CL / MCL
 
-**Stopped out (−1R):**
+| Winner (+5R) | Stopped out (−1R) |
+|---|---|
+| ![Oil winning trade](media/trade-oil-win.gif) | ![Oil losing trade](media/trade-oil-loss.gif) |
 
-![Losing trade end-to-end](media/trade-loss.gif)
+### S&P 500 — ES / MES
 
-The two look identical at the entry — you can't tell them apart in advance.
-That's the point: the edge is a small, pre-planned stop and letting winners run,
-not prediction.
+| Winner (+5R) | Stopped out (−1R) |
+|---|---|
+| ![S&P winning trade](media/trade-spx-win.gif) | ![S&P losing trade](media/trade-spx-loss.gif) |
+
+### Bitcoin — BTC / MBT
+
+| Winner (+5R) | Stopped out (−1R) |
+|---|---|
+| ![Bitcoin winning trade](media/trade-btc-win.gif) | ![Bitcoin losing trade](media/trade-btc-loss.gif) |
 
 ## How they fit together
 
