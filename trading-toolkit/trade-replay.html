@@ -1,0 +1,436 @@
+<title>Watch It Win — and Lose — The One-Method Trade Replay</title>
+<style>
+  :root {
+    --ground:#f6f3ec; --panel:#fffdf8; --panel-2:#efe9dc; --ink:#23222a; --ink-soft:#55525c;
+    --ink-faint:#837f88; --hair:#ddd6c6; --hair-strong:#c7bfab; --accent:#b07d24; --accent-bright:#c89544;
+    --teal:#2f7a78; --long:#3f8a5e; --short:#b34a44; --warn-bg:#fbeede; --warn-ink:#8a4a12;
+    --shadow:0 1px 2px rgba(30,25,15,.06),0 8px 30px rgba(30,25,15,.06);
+    --mono:ui-monospace,"SF Mono","SFMono-Regular",Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){ :root{
+    --ground:#0e1016; --panel:#161922; --panel-2:#1d212b; --ink:#e9e6df; --ink-soft:#a9a6a0;
+    --ink-faint:#726f6a; --hair:#242833; --hair-strong:#333844; --accent:#cf9f52; --accent-bright:#e2b46a;
+    --teal:#4fb0ad; --long:#57bd80; --short:#df7d78; --warn-bg:#2a1f12; --warn-ink:#e0a866;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 12px 38px rgba(0,0,0,.4);
+  }}
+  :root[data-theme="light"]{ --ground:#f6f3ec;--panel:#fffdf8;--panel-2:#efe9dc;--ink:#23222a;--ink-soft:#55525c;--ink-faint:#837f88;--hair:#ddd6c6;--hair-strong:#c7bfab;--accent:#b07d24;--accent-bright:#c89544;--teal:#2f7a78;--long:#3f8a5e;--short:#b34a44;--warn-bg:#fbeede;--warn-ink:#8a4a12;--shadow:0 1px 2px rgba(30,25,15,.06),0 8px 30px rgba(30,25,15,.06);}
+  :root[data-theme="dark"]{ --ground:#0e1016;--panel:#161922;--panel-2:#1d212b;--ink:#e9e6df;--ink-soft:#a9a6a0;--ink-faint:#726f6a;--hair:#242833;--hair-strong:#333844;--accent:#cf9f52;--accent-bright:#e2b46a;--teal:#4fb0ad;--long:#57bd80;--short:#df7d78;--warn-bg:#2a1f12;--warn-ink:#e0a866;--shadow:0 1px 2px rgba(0,0,0,.3),0 12px 38px rgba(0,0,0,.4);}
+
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:940px;margin:0 auto;padding:0 20px;}
+  .mono{font-family:var(--mono);font-variant-numeric:tabular-nums;}
+
+  h1,h2,h3{line-height:1.14;text-wrap:balance;font-weight:680;letter-spacing:-.01em;margin:0;}
+  h1{font-size:clamp(2rem,5.5vw,3.2rem);letter-spacing:-.03em;}
+  h2{font-size:1.35rem;margin-bottom:.25em;}
+  p{margin:0 0 1em;}
+
+  header.hero{border-bottom:1px solid var(--hair);background:radial-gradient(130% 100% at 88% -25%,color-mix(in srgb,var(--accent) 17%,transparent),transparent 60%),var(--ground);}
+  .hero-inner{padding:46px 0 34px;}
+  .kicker{font-family:var(--mono);font-size:.73rem;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:15px;display:flex;align-items:center;gap:11px;}
+  .kicker .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 22%,transparent);}
+  .hero p.lede{font-size:1.14rem;color:var(--ink-soft);max-width:60ch;margin:.5em 0 0;}
+
+  section{padding:30px 0;}
+  .sec-label{font-family:var(--mono);font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin-bottom:13px;}
+
+  .ctl-row{display:flex;gap:12px;flex-wrap:wrap;align-items:center;}
+  .markets{display:inline-flex;background:var(--panel-2);border:1px solid var(--hair);border-radius:12px;padding:4px;gap:4px;flex-wrap:wrap;}
+  .mbtn{font-family:var(--sans);font-size:.92rem;font-weight:640;padding:8px 16px;border-radius:9px;border:0;background:transparent;color:var(--ink-soft);cursor:pointer;}
+  .mbtn[aria-pressed="true"]{background:var(--accent);color:#fff;box-shadow:var(--shadow);}
+  .markets.scen .mbtn[data-scen="win"][aria-pressed="true"]{background:var(--long);}
+  .markets.scen .mbtn[data-scen="loss"][aria-pressed="true"]{background:var(--short);}
+  .mbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+
+  .theater{background:var(--panel);border:1px solid var(--hair-strong);border-radius:18px;box-shadow:var(--shadow);overflow:hidden;margin-top:14px;}
+  .theater-top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--hair);flex-wrap:wrap;}
+  .theater-top .sym{font-family:var(--mono);font-weight:680;font-size:1.05rem;color:var(--ink);}
+  .theater-top .sym .side{font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:999px;margin-left:8px;color:var(--long);background:color-mix(in srgb,var(--long) 16%,transparent);letter-spacing:.05em;}
+  .theater-top .live{font-family:var(--mono);font-size:.9rem;color:var(--ink-faint);text-align:right;}
+  .live .up{color:var(--long);} .live .dn{color:var(--short);}
+
+  .canvas-shell{position:relative;background:linear-gradient(180deg,color-mix(in srgb,var(--panel-2) 40%,var(--panel)),var(--panel));}
+  canvas{display:block;width:100%;height:auto;}
+  .caption{position:absolute;left:0;right:0;top:0;padding:12px 18px;font-size:.92rem;color:var(--ink);pointer-events:none;}
+  .caption .step-no{font-family:var(--mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);display:block;margin-bottom:2px;}
+  .caption .step-txt{font-weight:600;max-width:74%;text-shadow:0 1px 8px var(--panel);}
+
+  .result{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;opacity:0;}
+  .result.show{opacity:1;}
+  .result.show.anim{animation:pop .5s cubic-bezier(.2,1.3,.5,1) both;}
+  @keyframes pop{0%{transform:translate(-50%,-50%) scale(.7);}100%{transform:translate(-50%,-50%) scale(1);}}
+  .result .badge{font-family:var(--mono);font-weight:700;font-size:2rem;letter-spacing:-.02em;color:var(--long);text-shadow:0 2px 20px color-mix(in srgb,var(--long) 45%,transparent);}
+  .result.loss .badge{color:var(--short);text-shadow:0 2px 20px color-mix(in srgb,var(--short) 45%,transparent);}
+  .result .sub{font-family:var(--mono);font-size:.95rem;color:var(--ink);margin-top:4px;background:var(--panel);display:inline-block;padding:4px 12px;border-radius:999px;border:1px solid var(--hair);}
+
+  .controls{display:flex;align-items:center;gap:12px;padding:14px 18px;border-top:1px solid var(--hair);flex-wrap:wrap;}
+  .btn{font-family:var(--sans);font-size:.94rem;font-weight:640;padding:10px 22px;border-radius:11px;border:1px solid transparent;cursor:pointer;}
+  .btn.primary{background:var(--accent);color:#fff;} .btn.primary:hover{background:var(--accent-bright);}
+  .btn.ghost{background:transparent;border-color:var(--hair-strong);color:var(--ink-soft);} .btn.ghost:hover{border-color:var(--accent);color:var(--accent);}
+  .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  .speed{display:inline-flex;gap:4px;margin-left:auto;background:var(--panel-2);border-radius:9px;padding:3px;}
+  .speed button{font-family:var(--mono);font-size:.8rem;font-weight:640;padding:6px 11px;border-radius:7px;border:0;background:transparent;color:var(--ink-soft);cursor:pointer;}
+  .speed button[aria-pressed="true"]{background:var(--accent);color:#fff;}
+
+  .steps{display:grid;gap:9px;grid-template-columns:repeat(5,1fr);margin-top:16px;}
+  @media (max-width:720px){ .steps{grid-template-columns:1fr 1fr;} }
+  .stepc{background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:12px 13px;opacity:.5;transition:opacity .3s,border-color .3s,transform .3s;}
+  .stepc.on{opacity:1;border-color:var(--accent);transform:translateY(-2px);box-shadow:var(--shadow);}
+  .stepc.on.lossstep{border-color:var(--short);}
+  .stepc.done{opacity:1;}
+  .stepc .n{font-family:var(--mono);font-size:.72rem;font-weight:700;color:var(--accent);}
+  .stepc .h{font-weight:660;font-size:.92rem;margin-top:2px;}
+  .stepc .d{font-size:.78rem;color:var(--ink-soft);margin-top:3px;}
+
+  .card{background:var(--panel);border:1px solid var(--hair);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow);}
+  ol.method{margin:0;padding-left:0;list-style:none;counter-reset:m;display:grid;gap:12px;}
+  ol.method li{position:relative;padding-left:44px;}
+  ol.method li::before{counter-increment:m;content:counter(m);position:absolute;left:0;top:-2px;width:30px;height:30px;border-radius:8px;background:var(--panel-2);border:1px solid var(--hair-strong);color:var(--accent);font-family:var(--mono);font-weight:700;display:flex;align-items:center;justify-content:center;font-size:.9rem;}
+  ol.method b{display:block;}
+  ol.method span{color:var(--ink-soft);font-size:.92rem;}
+
+  .note{border-radius:12px;padding:15px 18px;margin:18px 0 0;font-size:.92rem;border:1px solid var(--hair-strong);background:var(--warn-bg);color:var(--warn-ink);border-left:3px solid var(--short);}
+  .note b{color:var(--warn-ink);}
+  .callout-label{font-family:var(--mono);font-size:.7rem;letter-spacing:.13em;text-transform:uppercase;display:block;margin-bottom:5px;}
+  .note.teal{background:var(--panel);color:var(--ink-soft);border-left-color:var(--teal);}
+  .note.teal .callout-label{color:var(--teal);} .note.teal b{color:var(--ink);}
+
+  footer{padding:32px 0 60px;color:var(--ink-faint);font-size:.82rem;}
+  .disc{border:1px solid var(--hair);border-radius:12px;padding:15px 18px;background:var(--panel);}
+
+  @media (prefers-reduced-motion:reduce){ *{transition:none!important;} .result.show.anim{animation:none!important;} }
+</style>
+
+<header class="hero">
+  <div class="wrap hero-inner">
+    <div class="kicker"><span class="dot"></span> One method · every market · win and loss</div>
+    <h1>Watch a trade win — and lose.</h1>
+    <p class="lede">The exact same setup on oil, the S&amp;P, or Bitcoin. Toggle between the <b>winner</b> and the <b>stopped-out</b> version to see the truth: same rules, sometimes it works, sometimes it doesn't — and the loss is small because the stop was set before you entered.</p>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section>
+    <div class="sec-label">1 · Pick a market &amp; an outcome</div>
+    <div class="ctl-row">
+      <div class="markets" role="group" aria-label="Choose market">
+        <button class="mbtn" data-mkt="oil" aria-pressed="true">🛢️ Oil · MCL</button>
+        <button class="mbtn" data-mkt="spx" aria-pressed="false">📊 S&amp;P 500 · MES</button>
+        <button class="mbtn" data-mkt="btc" aria-pressed="false">₿ Bitcoin · MBT</button>
+      </div>
+      <div class="markets scen" role="group" aria-label="Choose outcome">
+        <button class="mbtn" data-scen="win" aria-pressed="true">✓ Winner</button>
+        <button class="mbtn" data-scen="loss" aria-pressed="false">✕ Stopped out</button>
+      </div>
+    </div>
+
+    <div class="theater">
+      <div class="theater-top">
+        <div class="sym" id="sym">MCL — Micro Crude <span class="side">LONG</span></div>
+        <div class="live" id="live">Press <b>Play</b> to run the setup</div>
+      </div>
+      <div class="canvas-shell" id="shell">
+        <canvas id="cv" width="900" height="420" aria-label="Animated candlestick chart of a trade setup"></canvas>
+        <div class="caption"><span class="step-no" id="cap-no">Ready</span><span class="step-txt" id="cap-txt">A textbook long setup — press play to watch it play out.</span></div>
+        <div class="result" id="result"><div class="badge" id="res-badge">✓ WINNER</div><div class="sub" id="res-sub"></div></div>
+      </div>
+      <div class="controls">
+        <button class="btn primary" id="play">▶ Play</button>
+        <button class="btn ghost" id="replay">↺ Replay</button>
+        <div class="speed" role="group" aria-label="Speed">
+          <button data-spd="1" aria-pressed="false">1×</button>
+          <button data-spd="2" aria-pressed="true">2×</button>
+          <button data-spd="4" aria-pressed="false">4×</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="steps" id="steps">
+      <div class="stepc" data-s="1"><div class="n">01</div><div class="h">Trend up</div><div class="d">Higher highs; 9&nbsp;EMA over 21.</div></div>
+      <div class="stepc" data-s="2"><div class="n">02</div><div class="h">Pullback</div><div class="d">Draw Fib low→high. Watch 0.618.</div></div>
+      <div class="stepc" data-s="3"><div class="n">03</div><div class="h">Rejection</div><div class="d">Hammer prints in the pocket.</div></div>
+      <div class="stepc" data-s="4"><div class="n">04</div><div class="h">Enter + risk</div><div class="d">Stop below, target the high.</div></div>
+      <div class="stepc" data-s="5"><div class="n">05</div><div class="h" id="s5h">Target hit</div><div class="d" id="s5d">Price runs. +5R. Win.</div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-label">2 · The method (same on every market — win or lose)</div>
+    <div class="card">
+      <ol class="method">
+        <li><b>Mark your level</b><span>Support/resistance, prior-day high/low, or the all-time high — the price the market has reacted to before.</span></li>
+        <li><b>Confirm the trend</b><span>On the 5-min: 9-EMA above the 21, price above VWAP. Trade <em>with</em> that direction.</span></li>
+        <li><b>Draw Fibonacci &amp; wait for the pocket</b><span>Swing low → high. Let price pull back into the <b>0.618 golden pocket</b>, ideally on your level. That overlap is confluence.</span></li>
+        <li><b>Wait for the candle</b><span>A hammer or engulfing candle must print <em>in</em> the pocket and close. That's your trigger — never enter before it closes.</span></li>
+        <li><b>Enter with defined risk</b><span>Stop just beyond the pocket (below 0.786). Target the prior high. Size so the stop = ≤1% of your account.</span></li>
+        <li><b>Manage — and accept the outcome</b><span>Don't touch the stop. If it wins, take the target. If it loses, take the small loss and move on. Log both.</span></li>
+      </ol>
+    </div>
+    <div class="note teal">
+      <span class="callout-label">Why the losing replay matters more</span>
+      Flip to <b>✕ Stopped out</b> and watch: the setup looks <em>identical</em> until price rolls over and breaks the pocket. You can't tell winners from losers in advance — nobody can. What you <em>can</em> control is that the loss is <b>−1R</b> and boring, not an account-ender. Notice the loss (~$15–$30 on a micro) is a fraction of the +5R win. <b>Small losses, bigger wins, over many trades</b> — that's the entire game.
+    </div>
+    <div class="note">
+      <span class="callout-label">Honest caption</span>
+      <b>These are two clean illustrations, not a promise.</b> Real charts are messier and real win rates are often 40–55%. No method predicts which trades win. The stop and the 1% rule are what let you be wrong repeatedly and still survive to catch the winners. The <em>journal</em> is where you learn your real numbers.
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap"><div class="disc">
+    <p style="margin:0;">Education, not financial advice. Nothing here predicts the market; these are mechanical illustrations of one setup winning and losing. Trade only what you can afford to lose. Companion to <em>The Confluence Playbook</em>, the <em>TradingView Setup Guide</em>, and the <em>Trade Journal</em>.</p>
+  </div></div>
+</footer>
+
+<script>
+(function(){
+  var cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+  var shell = document.getElementById('shell');
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // shared first 15 candles: rally -> pullback to pocket -> hammer entry (index 14)
+  var HEAD = [
+    [.30,.34,.29,.33],[.33,.38,.32,.37],[.37,.41,.35,.40],[.40,.46,.39,.45],
+    [.45,.51,.44,.49],[.49,.57,.48,.55],[.55,.63,.54,.61],[.61,.71,.60,.68],[.68,.82,.67,.80],
+    [.80,.81,.72,.73],[.73,.75,.67,.68],[.68,.70,.61,.62],[.62,.64,.55,.56],[.56,.57,.50,.515],
+    [.515,.53,.465,.525]
+  ];
+  var WIN_TAIL = [
+    [.525,.585,.515,.575],[.575,.635,.565,.625],[.625,.675,.615,.665],[.665,.715,.655,.705],
+    [.705,.745,.695,.735],[.735,.785,.725,.775],[.775,.825,.765,.805],[.805,.845,.795,.835],[.835,.865,.825,.855]
+  ];
+  var LOSS_TAIL = [
+    [.525,.54,.50,.505],[.505,.515,.47,.48],[.48,.49,.43,.44],[.44,.45,.40,.41],[.41,.42,.375,.385]
+  ];
+  var C_WIN = HEAD.concat(WIN_TAIL);   // 24 candles, target hit at 21
+  var C_LOSS = HEAD.concat(LOSS_TAIL); // 20 candles, stop hit at 17
+
+  var ENTRY_CANDLE = 14;
+  var LOWN=.30, HIGHN=.80, entryN=.50, stopN=.44, targetN=.80, pocketTopN=.515, pocketBotN=.465;
+  var Rmult = (targetN-entryN)/(entryN-stopN); // 5.0
+
+  var SCEN = { win:{C:C_WIN, outcome:21}, loss:{C:C_LOSS, outcome:17} };
+  var scenario = 'win';
+  function aC(){ return SCEN[scenario].C; }
+  function aN(){ return SCEN[scenario].C.length; }
+  function aOut(){ return SCEN[scenario].outcome; }
+
+  var MKT = {
+    oil:{name:'MCL — Micro Crude', low:74.00, high:76.50, pv:100, dp:2},
+    spx:{name:'MES — Micro E-mini S&P', low:5975, high:6025, pv:5, dp:2},
+    btc:{name:'MBT — Micro Bitcoin', low:98000, high:103000, pv:0.1, dp:0}
+  };
+  var mkt = 'oil';
+  function price(n){ var m=MKT[mkt]; return m.low + n*(m.high-m.low); }
+  function fmtP(n){ var m=MKT[mkt]; return price(n).toLocaleString('en-US',{minimumFractionDigits:m.dp,maximumFractionDigits:m.dp}); }
+  function money(v){ return (v<0?'−$':'$') + Math.abs(v).toLocaleString('en-US',{maximumFractionDigits:0}); }
+
+  var DPR = Math.max(1, Math.min(3, window.devicePixelRatio||1));
+  var padL=14, padR=74, padT=44, padB=26, DMIN=.27, DMAX=.90, W, H;
+  function cssVar(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+  function resize(){
+    var cssW = shell.clientWidth || 900;
+    var cssH = Math.max(300, Math.min(460, Math.round(cssW*0.5)));
+    W=cssW; H=cssH;
+    cv.style.width=cssW+'px'; cv.style.height=cssH+'px';
+    cv.width=Math.round(cssW*DPR); cv.height=Math.round(cssH*DPR);
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    draw(curLi);
+  }
+  function xFor(i,N){ var iw=W-padL-padR; return padL + (i+0.5)*(iw/N); }
+  function yFor(n){ var ih=H-padT-padB; return padT + (1-(n-DMIN)/(DMAX-DMIN))*ih; }
+
+  var curLi = -1;
+
+  function draw(li){
+    curLi = li;
+    var C=aC(), N=aN();
+    var cLong=cssVar('--long'), cShort=cssVar('--short'), cHair=cssVar('--hair'),
+        cHairS=cssVar('--hair-strong'), cAcc=cssVar('--accent'), cInk=cssVar('--ink-faint');
+    ctx.clearRect(0,0,W,H);
+    ctx.font='11px '+cssVar('--mono'); ctx.textBaseline='middle';
+
+    ctx.strokeStyle=cHair; ctx.lineWidth=1;
+    [.30,.45,.60,.75,.90].forEach(function(n){
+      var y=yFor(n); ctx.globalAlpha=.5; ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(W-padR,y); ctx.stroke(); ctx.globalAlpha=1;
+    });
+
+    var iw=W-padL-padR;
+    if(li>=8){
+      var yT=yFor(pocketTopN), yB=yFor(pocketBotN);
+      ctx.fillStyle=cAcc; ctx.globalAlpha=.14; ctx.fillRect(padL,yT,iw,yB-yT); ctx.globalAlpha=1;
+      ctx.strokeStyle=cAcc; ctx.globalAlpha=.5; ctx.setLineDash([4,3]);
+      ctx.beginPath(); ctx.moveTo(padL,yT); ctx.lineTo(W-padR,yT); ctx.moveTo(padL,yB); ctx.lineTo(W-padR,yB); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha=1;
+      ctx.fillStyle=cAcc; ctx.textAlign='left'; ctx.globalAlpha=.85; ctx.fillText('0.618 pocket', padL+4, yFor(pocketTopN)-8); ctx.globalAlpha=1;
+    }
+
+    var entered = li>=ENTRY_CANDLE;
+    if(entered){
+      var ex=xFor(ENTRY_CANDLE,N);
+      var yE=yFor(entryN), yT2=yFor(targetN), yS=yFor(stopN);
+      ctx.fillStyle=cLong; ctx.globalAlpha=.10; ctx.fillRect(ex, yT2, (W-padR)-ex, yE-yT2); ctx.globalAlpha=1;
+      ctx.fillStyle=cShort; ctx.globalAlpha=.12; ctx.fillRect(ex, yE, (W-padR)-ex, yS-yE); ctx.globalAlpha=1;
+      function hline(n,color,label,dash){
+        var y=yFor(n); ctx.strokeStyle=color; ctx.lineWidth=1.6; ctx.setLineDash(dash||[]);
+        ctx.beginPath(); ctx.moveTo(ex,y); ctx.lineTo(W-padR,y); ctx.stroke(); ctx.setLineDash([]);
+        ctx.fillStyle=color; ctx.textAlign='left'; ctx.font='11px '+cssVar('--mono');
+        ctx.fillText(label+' '+fmtP(n), W-padR+4, y);
+      }
+      hline(targetN, cLong, 'T', [5,3]);
+      hline(entryN, cAcc, 'E', []);
+      hline(stopN, cShort, 'S', [5,3]);
+    }
+
+    var cw = Math.max(3, (iw/N)*0.58);
+    for(var i=0;i<=li && i<N;i++){
+      var o=C[i][0],h=C[i][1],l=C[i][2],c=C[i][3];
+      var up=c>=o, col=up?cLong:cShort, x=xFor(i,N);
+      ctx.strokeStyle=col; ctx.lineWidth=1.4;
+      ctx.beginPath(); ctx.moveTo(x,yFor(h)); ctx.lineTo(x,yFor(l)); ctx.stroke();
+      var yo=yFor(o), yc=yFor(c), top=Math.min(yo,yc), hgt=Math.max(2,Math.abs(yc-yo));
+      ctx.fillStyle=col; ctx.fillRect(x-cw/2, top, cw, hgt);
+      if(i===ENTRY_CANDLE && li>=ENTRY_CANDLE){
+        ctx.strokeStyle=cAcc; ctx.lineWidth=2; ctx.strokeRect(x-cw/2-2, yFor(h)-2, cw+4, yFor(l)-yFor(h)+4);
+      }
+    }
+
+    if(li>=0){
+      var lc=C[Math.min(li,N-1)][3], y=yFor(lc), x=xFor(Math.min(li,N-1),N);
+      ctx.strokeStyle=cHairS; ctx.globalAlpha=.7; ctx.setLineDash([2,3]); ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(x,y); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha=1;
+      ctx.fillStyle=cAcc; ctx.beginPath(); ctx.arc(x,y,3.5,0,7); ctx.fill();
+    }
+  }
+
+  var CAPS = {
+    ready:['Ready','A textbook long setup — press play to watch it play out.'],
+    s1:['Step 01 · Trend','Strong uptrend — higher highs, buyers in control. We only look for longs.'],
+    s2:['Step 02 · Pullback','Price pulls back. Draw Fib from the swing low to the high — watch the 0.618 pocket.'],
+    s3:['Step 03 · Rejection','A hammer prints right in the golden pocket. Buyers defend. This is the trigger.']
+  };
+  function capFor(ph){
+    if(ph in CAPS) return CAPS[ph];
+    if(ph==='s4'){
+      return scenario==='win'
+        ? ['Step 04 · In the trade','You’re long from the pocket. Stop set below, target ahead — let it work.']
+        : ['Step 04 · In the trade','Price stalls and rolls over instead of running. Don’t touch the stop — this is exactly why it’s there.'];
+    }
+    // s5
+    return scenario==='win'
+      ? ['Step 05 · Win','Price runs to target. +'+Rmult.toFixed(0)+'R — the winner.']
+      : ['Step 05 · Stopped out','Price breaks back through the pocket and the stop hits: −1R. A good loss — small and planned. Move on.'];
+  }
+  function phase(li){
+    if(li<0) return 'ready';
+    if(li<=8) return 's1';
+    if(li<=13) return 's2';
+    if(li===14) return 's3';
+    if(li<aOut()) return 's4';
+    return 's5';
+  }
+  function setStep(li){
+    var ph=phase(li);
+    var map={ready:0,s1:1,s2:2,s3:3,s4:4,s5:5}, active=map[ph];
+    var lossFinal = (ph==='s5' && scenario==='loss');
+    Array.prototype.forEach.call(document.querySelectorAll('.stepc'),function(el){
+      var s=+el.getAttribute('data-s');
+      el.classList.toggle('on', s===active);
+      el.classList.toggle('done', s<active);
+      el.classList.toggle('lossstep', s===active && lossFinal);
+    });
+    var cap=capFor(ph);
+    document.getElementById('cap-no').textContent=cap[0];
+    document.getElementById('cap-txt').textContent=cap[1];
+
+    var live=document.getElementById('live'), C=aC(), N=aN();
+    if(li<0){ live.innerHTML='Press <b>Play</b> to run the setup'; return; }
+    var lc=C[Math.min(li,N-1)][3];
+    if(li>=ENTRY_CANDLE){
+      var m=MKT[mkt], openR=(lc-entryN)/(entryN-stopN), pnl=(price(lc)-price(entryN))*m.pv, cls=pnl>=0?'up':'dn';
+      live.innerHTML='Open P&amp;L <b class="'+cls+'">'+money(pnl)+'</b> · <b class="'+cls+'">'+(openR>=0?'+':'−')+Math.abs(openR).toFixed(1)+'R</b>';
+    } else { live.innerHTML='Last <b>'+fmtP(lc)+'</b>'; }
+  }
+
+  function updateS5Labels(){
+    if(scenario==='win'){ document.getElementById('s5h').textContent='Target hit'; document.getElementById('s5d').textContent='Price runs. +5R. Win.'; }
+    else { document.getElementById('s5h').textContent='Stopped out'; document.getElementById('s5d').textContent='−1R. Small, planned loss.'; }
+  }
+
+  function showResult(on){
+    var r=document.getElementById('result');
+    r.classList.remove('show','anim','loss');
+    if(!on) return;
+    var m=MKT[mkt];
+    if(scenario==='win'){
+      var reward=(price(targetN)-price(entryN))*m.pv;
+      document.getElementById('res-badge').textContent='✓ WINNER';
+      document.getElementById('res-sub').textContent='+'+Rmult.toFixed(0)+'R  ·  '+money(reward)+' on 1 '+m.name.split(' ')[0];
+    } else {
+      var loss=(price(stopN)-price(entryN))*m.pv;
+      r.classList.add('loss');
+      document.getElementById('res-badge').textContent='✕ STOPPED OUT';
+      document.getElementById('res-sub').textContent='−1R  ·  '+money(loss)+'  ·  the loss you planned for';
+    }
+    r.classList.add('show'); if(!reduce) r.classList.add('anim');
+  }
+
+  var timer=null, speed=2;
+  function stop(){ if(timer){ clearInterval(timer); timer=null; } document.getElementById('play').textContent='▶ Play'; }
+  function playFrom(start){
+    stop(); showResult(false);
+    var N=aN(), outcome=aOut();
+    if(reduce){ draw(N-1); setStep(N-1); showResult(true); return; }
+    var li=start; draw(li); setStep(li);
+    document.getElementById('play').textContent='❚❚ Playing';
+    var iv=560/speed;
+    timer=setInterval(function(){
+      li++;
+      if(li>=N){ stop(); return; }
+      draw(li); setStep(li);
+      if(li===outcome) showResult(true);
+      if(li>=N-1) stop();
+    }, iv);
+  }
+
+  document.getElementById('play').addEventListener('click',function(){
+    if(timer){ stop(); return; }
+    if(curLi>=aN()-1 || curLi<0) playFrom(0); else playFrom(curLi+1);
+  });
+  document.getElementById('replay').addEventListener('click',function(){ playFrom(0); });
+
+  Array.prototype.forEach.call(document.querySelectorAll('.mbtn[data-mkt]'),function(b){
+    b.addEventListener('click',function(){
+      Array.prototype.forEach.call(document.querySelectorAll('.mbtn[data-mkt]'),function(x){ x.setAttribute('aria-pressed','false'); });
+      b.setAttribute('aria-pressed','true'); mkt=b.getAttribute('data-mkt');
+      document.getElementById('sym').innerHTML = MKT[mkt].name + ' <span class="side">LONG</span>';
+      draw(curLi); setStep(curLi);
+      if(curLi>=aOut()) showResult(true);
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('.mbtn[data-scen]'),function(b){
+    b.addEventListener('click',function(){
+      Array.prototype.forEach.call(document.querySelectorAll('.mbtn[data-scen]'),function(x){ x.setAttribute('aria-pressed','false'); });
+      b.setAttribute('aria-pressed','true'); scenario=b.getAttribute('data-scen');
+      updateS5Labels(); stop(); showResult(false);
+      curLi=-1; draw(-1); setStep(-1);
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('.speed button'),function(b){
+    b.addEventListener('click',function(){
+      Array.prototype.forEach.call(document.querySelectorAll('.speed button'),function(x){ x.setAttribute('aria-pressed','false'); });
+      b.setAttribute('aria-pressed','true'); speed=+b.getAttribute('data-spd');
+      if(timer) playFrom(curLi+1);
+    });
+  });
+
+  window.addEventListener('resize', resize);
+  updateS5Labels(); resize(); setStep(-1);
+})();
+</script>

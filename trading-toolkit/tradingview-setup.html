@@ -1,0 +1,319 @@
+<title>Day One on TradingView — Oil & S&P Setup</title>
+<style>
+  :root {
+    --ground: #f6f3ec; --panel: #fffdf8; --panel-2: #efe9dc; --ink: #23222a;
+    --ink-soft: #55525c; --ink-faint: #837f88; --hair: #ddd6c6; --hair-strong: #c7bfab;
+    --accent: #b07d24; --accent-bright: #c89544; --teal: #2f7a78; --long: #3f8a5e;
+    --short: #b34a44; --warn-bg: #fbeede; --warn-ink: #8a4a12;
+    --shadow: 0 1px 2px rgba(30,25,15,.06), 0 8px 30px rgba(30,25,15,.06);
+    --mono: ui-monospace, "SF Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground: #101218; --panel: #171a22; --panel-2: #1e222c; --ink: #e9e6df;
+      --ink-soft: #a9a6a0; --ink-faint: #726f6a; --hair: #262a34; --hair-strong: #333844;
+      --accent: #cf9f52; --accent-bright: #e2b46a; --teal: #4fb0ad; --long: #59b57e;
+      --short: #d97873; --warn-bg: #2a1f12; --warn-ink: #e0a866;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 34px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="light"] {
+    --ground: #f6f3ec; --panel: #fffdf8; --panel-2: #efe9dc; --ink: #23222a;
+    --ink-soft: #55525c; --ink-faint: #837f88; --hair: #ddd6c6; --hair-strong: #c7bfab;
+    --accent: #b07d24; --accent-bright: #c89544; --teal: #2f7a78; --long: #3f8a5e;
+    --short: #b34a44; --warn-bg: #fbeede; --warn-ink: #8a4a12;
+    --shadow: 0 1px 2px rgba(30,25,15,.06), 0 8px 30px rgba(30,25,15,.06);
+  }
+  :root[data-theme="dark"] {
+    --ground: #101218; --panel: #171a22; --panel-2: #1e222c; --ink: #e9e6df;
+    --ink-soft: #a9a6a0; --ink-faint: #726f6a; --hair: #262a34; --hair-strong: #333844;
+    --accent: #cf9f52; --accent-bright: #e2b46a; --teal: #4fb0ad; --long: #59b57e;
+    --short: #d97873; --warn-bg: #2a1f12; --warn-ink: #e0a866;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 34px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin:0; background:var(--ground); color:var(--ink); font-family:var(--sans);
+    font-size:17px; line-height:1.6; -webkit-font-smoothing:antialiased; }
+  .wrap { max-width:820px; margin:0 auto; padding:0 22px; }
+
+  h1,h2,h3 { line-height:1.15; text-wrap:balance; font-weight:680; letter-spacing:-.01em; }
+  h1 { font-size:clamp(2rem,5.5vw,3.1rem); margin:0 0 .4em; letter-spacing:-.03em; }
+  h2 { font-size:clamp(1.4rem,3vw,1.9rem); margin:0 0 .3em; letter-spacing:-.02em; }
+  h3 { font-size:1.1rem; margin:0 0 .3em; }
+  p { margin:0 0 1.05em; }
+  a { color:var(--accent); text-underline-offset:2px; }
+  strong { font-weight:680; color:var(--ink); }
+  code, .mono { font-family:var(--mono); font-variant-numeric:tabular-nums; }
+  code { background:var(--panel-2); padding:1px 7px; border-radius:5px; font-size:.9em; color:var(--accent); border:1px solid var(--hair); }
+
+  .eyebrow { font-family:var(--mono); font-size:.74rem; letter-spacing:.18em; text-transform:uppercase; color:var(--accent); margin:0 0 1em; font-weight:500; }
+
+  header.hero { border-bottom:1px solid var(--hair);
+    background: radial-gradient(120% 90% at 88% -10%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 60%), var(--ground); }
+  .hero-inner { padding:70px 0 46px; }
+  .hero .kicker { font-family:var(--mono); font-size:.78rem; letter-spacing:.2em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:18px; display:flex; align-items:center; gap:12px; }
+  .hero .kicker .dot { width:7px; height:7px; border-radius:50%; background:var(--accent); box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 22%,transparent); }
+  .hero p.lede { font-size:1.2rem; color:var(--ink-soft); max-width:60ch; margin-bottom:0; }
+
+  section { padding:42px 0; border-bottom:1px solid var(--hair); }
+  section:last-of-type { border-bottom:0; }
+
+  /* symbol cards */
+  .syms { display:grid; gap:14px; margin:22px 0; }
+  @media (min-width:620px){ .syms { grid-template-columns:1fr 1fr; } }
+  .sym { background:var(--panel); border:1px solid var(--hair); border-radius:12px; padding:18px 20px; box-shadow:var(--shadow); }
+  .sym .tick { font-family:var(--mono); font-size:1.5rem; font-weight:680; color:var(--accent); letter-spacing:-.02em; }
+  .sym .name { font-size:.95rem; color:var(--ink-soft); margin:2px 0 10px; }
+  .sym .meta { font-family:var(--mono); font-size:.82rem; color:var(--ink-faint); border-top:1px solid var(--hair); padding-top:10px; }
+  .sym .meta b { color:var(--ink); font-weight:600; }
+  .sym.micro { border-style:dashed; }
+  .badge { font-family:var(--mono); font-size:.66rem; letter-spacing:.1em; text-transform:uppercase; padding:2px 8px; border-radius:999px; background:color-mix(in srgb,var(--teal) 16%,transparent); color:var(--teal); vertical-align:middle; margin-left:8px; }
+  .badge.learn { background:color-mix(in srgb,var(--long) 18%,transparent); color:var(--long); }
+
+  /* numbered steps — a real sequence, so numbers earn their place */
+  .steps { list-style:none; counter-reset:step; padding:0; margin:24px 0; display:grid; gap:14px; }
+  .steps > li { position:relative; background:var(--panel); border:1px solid var(--hair); border-radius:12px; padding:18px 20px 18px 62px; box-shadow:var(--shadow); }
+  .steps > li::before { counter-increment:step; content:counter(step); position:absolute; left:16px; top:16px;
+    width:32px; height:32px; border-radius:8px; background:var(--accent); color:#fff; font-family:var(--mono); font-weight:680; font-size:1rem; display:flex; align-items:center; justify-content:center; }
+  :root[data-theme="dark"] .steps > li::before, @media (prefers-color-scheme:dark){ }
+  .steps h3 { margin-bottom:.35em; }
+  .steps p { margin:0; color:var(--ink-soft); font-size:.95rem; }
+  .steps p + p { margin-top:.6em; }
+
+  .note, .warn, .key { border-radius:12px; padding:16px 20px; margin:20px 0; font-size:.95rem; border:1px solid var(--hair-strong); background:var(--panel); }
+  .note { border-left:3px solid var(--teal); }
+  .key { border-left:3px solid var(--accent); background:var(--panel-2); }
+  .warn { border-left:3px solid var(--short); background:var(--warn-bg); color:var(--warn-ink); border-color:color-mix(in srgb,var(--short) 30%,var(--hair)); }
+  .warn strong { color:var(--warn-ink); }
+  .callout-label { font-family:var(--mono); font-size:.72rem; letter-spacing:.14em; text-transform:uppercase; display:block; margin-bottom:6px; opacity:.85; }
+
+  ul.tight { margin:.4em 0 0; padding-left:1.15em; }
+  ul.tight li { margin-bottom:.35em; color:var(--ink-soft); }
+  ul.tight li::marker { color:var(--accent); }
+  ul.tight b, ul.tight strong { color:var(--ink); }
+
+  /* indicator table */
+  table.ind { width:100%; border-collapse:collapse; margin:20px 0; font-size:.92rem; }
+  table.ind th, table.ind td { text-align:left; padding:11px 12px; border-bottom:1px solid var(--hair); vertical-align:top; }
+  table.ind th { font-size:.7rem; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint); font-weight:600; }
+  table.ind td.n { font-family:var(--mono); color:var(--accent); font-weight:600; white-space:nowrap; }
+  table.ind tr:last-child td { border-bottom:0; }
+  .tbl-shell { overflow-x:auto; }
+
+  /* routine checklist */
+  .routine { list-style:none; padding:0; margin:22px 0; display:grid; gap:9px; }
+  .routine li { display:flex; gap:12px; align-items:flex-start; background:var(--panel); border:1px solid var(--hair); border-radius:10px; padding:12px 14px; }
+  .routine .box { flex:none; width:19px; height:19px; border-radius:5px; border:2px solid var(--accent); margin-top:2px; }
+  .routine b { display:block; }
+  .routine span { color:var(--ink-soft); font-size:.9rem; }
+
+  .hours { display:grid; gap:12px; margin:20px 0; }
+  @media (min-width:620px){ .hours { grid-template-columns:1fr 1fr; } }
+  .hours .h { background:var(--panel); border:1px solid var(--hair); border-radius:12px; padding:16px 18px; box-shadow:var(--shadow); }
+  .hours .h .t { font-family:var(--mono); font-size:1.05rem; color:var(--accent); font-weight:640; }
+  .hours .h .l { font-size:.72rem; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:4px; }
+  .hours .h p { margin:.5em 0 0; font-size:.88rem; color:var(--ink-soft); }
+
+  footer { padding:40px 0 66px; color:var(--ink-faint); font-size:.85rem; }
+  .disc { border:1px solid var(--hair); border-radius:12px; padding:16px 20px; background:var(--panel); }
+
+  @media (prefers-reduced-motion:reduce){ *{transition:none!important;animation:none!important;} }
+</style>
+
+<header class="hero">
+  <div class="wrap hero-inner">
+    <div class="kicker"><span class="dot"></span> Setup guide · do it in order · $0 to start</div>
+    <h1>Day One on TradingView</h1>
+    <p class="lede">Get oil and the S&amp;P on your screen with the playbook's indicators and levels loaded — and a paper account to practice on before you risk a cent. Every step is free.</p>
+  </div>
+</header>
+
+<main>
+
+<!-- SYMBOLS -->
+<section id="symbols">
+  <div class="wrap">
+    <p class="eyebrow">01 &nbsp;/&nbsp; The exact tickers</p>
+    <h2>What to type in the symbol search</h2>
+    <p>TradingView has thousands of look-alike symbols. These are the exact ones for our markets. The <code>1!</code> means "continuous front-month contract" — the standard chart for futures. <strong>Learn on the micros</strong> (the dashed cards): same chart, same setups, one-tenth the money at risk.</p>
+
+    <h3 style="margin-top:1.4em">Oil</h3>
+    <div class="syms">
+      <div class="sym">
+        <div class="tick">CL1!</div>
+        <div class="name">Crude Oil futures (WTI)</div>
+        <div class="meta"><b>$1,000</b> / point · tick <b>$10</b> · fast mover</div>
+      </div>
+      <div class="sym micro">
+        <div class="tick">MCL1! <span class="badge learn">learn here</span></div>
+        <div class="name">Micro Crude Oil futures</div>
+        <div class="meta"><b>$100</b> / point · tick <b>$1</b> · 1/10 the size</div>
+      </div>
+    </div>
+
+    <h3 style="margin-top:1.4em">S&amp;P 500</h3>
+    <div class="syms">
+      <div class="sym">
+        <div class="tick">ES1!</div>
+        <div class="name">E-mini S&amp;P 500 futures</div>
+        <div class="meta"><b>$50</b> / point · tick <b>$12.50</b></div>
+      </div>
+      <div class="sym micro">
+        <div class="tick">MES1! <span class="badge learn">learn here</span></div>
+        <div class="name">Micro E-mini S&amp;P 500 futures</div>
+        <div class="meta"><b>$5</b> / point · tick <b>$1.25</b> · 1/10 the size</div>
+      </div>
+    </div>
+
+    <h3 style="margin-top:1.4em">Bitcoin</h3>
+    <div class="syms">
+      <div class="sym">
+        <div class="tick">BTC1!</div>
+        <div class="name">CME Bitcoin futures (5 BTC)</div>
+        <div class="meta"><b>$5</b> / $1 move · tick <b>$25</b> · very large</div>
+      </div>
+      <div class="sym micro">
+        <div class="tick">MBT1! <span class="badge learn">learn here</span></div>
+        <div class="name">CME Micro Bitcoin futures (0.1 BTC)</div>
+        <div class="meta"><b>$0.10</b> / $1 move · tick <b>$0.50</b> · 1/50 the size</div>
+      </div>
+    </div>
+    <div class="warn">
+      <span class="callout-label">Bitcoin is a different beast</span>
+      Bitcoin moves <strong>thousands of dollars a day</strong> — far more than oil or the S&amp;P. That means your stops have to be much wider in dollar terms, so you must trade <em>fewer contracts</em> to keep the same risk. Even one full <code>BTC1!</code> contract can risk thousands on a normal stop — which is exactly why you start on <code>MBT1!</code>. Same playbook, same levels; just respect the size. (For a truly 24/7 reference chart, <code>BTCUSD</code> shows spot crypto, but trade the <em>futures</em> ticker on TopStep.)
+    </div>
+    <div class="note">
+      <span class="callout-label">SPY vs ES — don't confuse them</span>
+      <strong>SPY</strong> is the S&amp;P ETF (a stock you buy shares of); <strong>ES/MES</strong> are the S&amp;P <em>futures</em> you'll trade on TopStep. They move almost identically, so you can study either — but trade the <em>futures</em> ticker, since that's your actual instrument. Type <code>SPY</code> only if you want the ETF view for reference.
+    </div>
+  </div>
+</section>
+
+<!-- DATA REALITY -->
+<section id="data">
+  <div class="wrap">
+    <p class="eyebrow">02 &nbsp;/&nbsp; The one honest catch</p>
+    <h2>Free vs. real-time data</h2>
+    <p>TradingView's free plan is <strong>perfect for learning</strong> — charting, drawing, indicators, and the paper-trading account are all free. The catch: live CME futures data (CL, ES) is usually <strong>delayed ~10 minutes</strong> on the free tier.</p>
+    <ul class="tight">
+      <li><strong>For learning the playbook</strong> — drawing Fib, marking levels, reading candles on the daily and 5-min — delayed data is totally fine. Do this for weeks first.</li>
+      <li><strong>For live paper-trading practice with real timing</strong> — you'll eventually want the CME real-time data add-on (a few dollars a month). Don't pay for it until you're ready to practice execution.</li>
+    </ul>
+    <div class="key">
+      <span class="callout-label">Order of spending</span>
+      Free charts → free paper account → (only when your journal shows an edge) → real-time data → real broker → real money on <em>micros.</em> Most people skip to the last step and lose. You won't.
+    </div>
+  </div>
+</section>
+
+<!-- CHART SETUP -->
+<section id="chart">
+  <div class="wrap">
+    <p class="eyebrow">03 &nbsp;/&nbsp; Build the chart</p>
+    <h2>Set it up once</h2>
+    <ol class="steps">
+      <li>
+        <h3>Make a free account &amp; open the chart</h3>
+        <p>Go to tradingview.com, sign up, click <strong>Chart</strong>. In the top-left symbol box, type <code>MCL1!</code> and hit enter. You're looking at micro crude oil.</p>
+      </li>
+      <li>
+        <h3>Set the chart type to candles</h3>
+        <p>Top toolbar → chart-type dropdown → <strong>Candles</strong> (or Hollow Candles). This is how you read the open/high/low/close from the playbook.</p>
+      </li>
+      <li>
+        <h3>Set your two timeframes</h3>
+        <p>Top-left interval box. Use <strong>Daily (D)</strong> to map your big levels, and <strong>5-minute (5)</strong> to trade. Save both by clicking the star ⭐ next to the interval so they're one click away.</p>
+      </li>
+      <li>
+        <h3>Add the indicators</h3>
+        <p>Click <strong>Indicators</strong> (top toolbar), search each by name, and add these four:</p>
+      </li>
+      <li>
+        <h3>Draw your levels &amp; Fibonacci</h3>
+        <p>Left-side drawing toolbar. Use the <strong>Horizontal Line / Ray</strong> for support, resistance, prior-day high/low, and the all-time high. Use the <strong>Fib Retracement</strong> tool to drag swing-low → swing-high (see the playbook for exactly how).</p>
+      </li>
+      <li>
+        <h3>Save it as a template &amp; build a watchlist</h3>
+        <p>Save the layout so every symbol inherits your indicators. Add <code>MCL1!</code>, <code>CL1!</code>, <code>MES1!</code>, <code>ES1!</code>, <code>MBT1!</code>, and <code>BTC1!</code> to a watchlist (right-side panel) so you can flip between them instantly.</p>
+      </li>
+    </ol>
+
+    <h3>The four indicators, by their exact TradingView names</h3>
+    <div class="tbl-shell">
+    <table class="ind">
+      <thead><tr><th>Search for</th><th>Settings</th><th>What it tells you</th></tr></thead>
+      <tbody>
+        <tr><td class="n">VWAP</td><td>Default (resets daily)</td><td>Intraday fair value. Price above = buyers in control; pullbacks to it are entry spots. Essential for ES/MES.</td></tr>
+        <tr><td class="n">Moving Average Exponential</td><td>Length <b>9</b></td><td>Fast trend line. Add it twice — once at 9, once at 21.</td></tr>
+        <tr><td class="n">Moving Average Exponential</td><td>Length <b>21</b></td><td>Slower trend. 9 above 21 &amp; rising = favor longs; acts as dynamic support/resistance.</td></tr>
+        <tr><td class="n">RSI</td><td>Length <b>14</b></td><td>Momentum 0–100. Watch for divergence (price new high, RSI not) — momentum fading. Don't short just because it's high.</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+</section>
+
+<!-- HOURS -->
+<section id="hours">
+  <div class="wrap">
+    <p class="eyebrow">04 &nbsp;/&nbsp; When to watch</p>
+    <h2>Best hours for each market</h2>
+    <p>Both trade nearly 24 hours, but you want the windows with real volume — that's when the levels behave and moves are clean. Times are US Eastern.</p>
+    <div class="hours">
+      <div class="h">
+        <div class="l">Oil · CL / MCL</div>
+        <div class="t">9:00 – 11:30 AM ET</div>
+        <p>The US morning session. Plus <strong>Wednesday 10:30 AM ET</strong> — the weekly EIA inventory report, which moves oil hard. As a beginner, <em>avoid</em> trading the first minute of that report; watch how it reacts.</p>
+      </div>
+      <div class="h">
+        <div class="l">S&amp;P · ES / MES</div>
+        <div class="t">9:30 – 11:30 AM ET</div>
+        <p>The US cash-market open — the highest-volume, cleanest window. Also active around <strong>8:30 AM ET</strong> economic data. The lunch hours (12–2 PM) go quiet and choppy; newer traders lose money there.</p>
+      </div>
+      <div class="h">
+        <div class="l">Bitcoin · BTC / MBT</div>
+        <div class="t">Nearly 24 hours</div>
+        <p>CME crypto futures trade almost round-the-clock, Sunday evening to Friday, with a short daily break — and spot crypto never closes. Cleanest volume still overlaps the <strong>US session</strong>. Beware weekends: futures close but spot keeps moving, so Monday can open with a gap.</p>
+      </div>
+    </div>
+    <div class="warn">
+      <span class="callout-label">Beginner rule</span>
+      Pick <strong>one</strong> market and <strong>one</strong> 2-hour window. Don't watch four charts at once on day one — you'll overtrade. Master oil's morning <em>or</em> the S&amp;P open first, then expand.
+    </div>
+  </div>
+</section>
+
+<!-- ROUTINE -->
+<section id="routine">
+  <div class="wrap">
+    <p class="eyebrow">05 &nbsp;/&nbsp; Every session</p>
+    <h2>Your daily routine</h2>
+    <p>Same steps, every day, before you take a single trade. This is the boring habit that actually builds an edge.</p>
+    <ul class="routine">
+      <li><span class="box" aria-hidden="true"></span><div><b>Mark levels on the Daily</b><span>Prior day high/low, key support/resistance, all-time high. Do this before the session opens.</span></div></li>
+      <li><span class="box" aria-hidden="true"></span><div><b>Note the trend</b><span>On the 5-min: is the 9-EMA above or below the 21? Above VWAP or below? That's your bias for the day.</span></div></li>
+      <li><span class="box" aria-hidden="true"></span><div><b>Wait for confluence</b><span>Price at a level + Fib golden pocket + a rejection candle. No confluence = no trade. Sit on your hands.</span></div></li>
+      <li><span class="box" aria-hidden="true"></span><div><b>Size it before you click</b><span>Run the playbook's calculator. Risk ≤ 1%. Know your stop and target before entering.</span></div></li>
+      <li><span class="box" aria-hidden="true"></span><div><b>Journal every trade</b><span>Screenshot the setup, note why you entered and the result. After 30–50 trades your journal tells you if you actually have an edge.</span></div></li>
+      <li><span class="box" aria-hidden="true"></span><div><b>Stop at your daily limit</b><span>Down two trades? Walk away. Protecting the account beats revenge-trading every single time.</span></div></li>
+    </ul>
+    <div class="note">
+      <span class="callout-label">Do this next</span>
+      Open TradingView, add <code>MCL1!</code>, and just <em>watch</em> tomorrow's 9:00–10:00 AM ET session with your levels drawn — no trades, real or paper. Get used to seeing the playbook play out live before you touch the buy button.
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="disc">
+      <p><strong>Education, not financial advice.</strong> Futures trading carries substantial risk of loss. Nothing here predicts markets or guarantees results. Practice on a free paper account until your own journal shows a real, repeatable edge before risking money — and only ever risk what you can afford to lose entirely.</p>
+      <p style="margin-bottom:0;color:var(--ink-faint)">Companion to <em>The Confluence Playbook</em> · symbols and contract specs per CME / TradingView conventions.</p>
+    </div>
+  </div>
+</footer>
