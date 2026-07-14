@@ -1,0 +1,605 @@
+<title>The Confluence Playbook — Fibonacci, Levels & Risk for Futures</title>
+<style>
+  :root {
+    /* light theme (default) */
+    --ground: #f6f3ec;
+    --panel: #fffdf8;
+    --panel-2: #efe9dc;
+    --ink: #23222a;
+    --ink-soft: #55525c;
+    --ink-faint: #837f88;
+    --hair: #ddd6c6;
+    --hair-strong: #c7bfab;
+    --accent: #b07d24;       /* gold, darkened for contrast on light */
+    --accent-bright: #c89544;
+    --teal: #2f7a78;
+    --long: #3f8a5e;
+    --short: #b34a44;
+    --warn-bg: #fbeede;
+    --warn-ink: #8a4a12;
+    --shadow: 0 1px 2px rgba(30,25,15,.06), 0 8px 30px rgba(30,25,15,.06);
+    --mono: ui-monospace, "SF Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground: #101218;
+      --panel: #171a22;
+      --panel-2: #1e222c;
+      --ink: #e9e6df;
+      --ink-soft: #a9a6a0;
+      --ink-faint: #726f6a;
+      --hair: #262a34;
+      --hair-strong: #333844;
+      --accent: #cf9f52;
+      --accent-bright: #e2b46a;
+      --teal: #4fb0ad;
+      --long: #59b57e;
+      --short: #d97873;
+      --warn-bg: #2a1f12;
+      --warn-ink: #e0a866;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 34px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="light"] {
+    --ground: #f6f3ec; --panel: #fffdf8; --panel-2: #efe9dc; --ink: #23222a;
+    --ink-soft: #55525c; --ink-faint: #837f88; --hair: #ddd6c6; --hair-strong: #c7bfab;
+    --accent: #b07d24; --accent-bright: #c89544; --teal: #2f7a78; --long: #3f8a5e;
+    --short: #b34a44; --warn-bg: #fbeede; --warn-ink: #8a4a12;
+    --shadow: 0 1px 2px rgba(30,25,15,.06), 0 8px 30px rgba(30,25,15,.06);
+  }
+  :root[data-theme="dark"] {
+    --ground: #101218; --panel: #171a22; --panel-2: #1e222c; --ink: #e9e6df;
+    --ink-soft: #a9a6a0; --ink-faint: #726f6a; --hair: #262a34; --hair-strong: #333844;
+    --accent: #cf9f52; --accent-bright: #e2b46a; --teal: #4fb0ad; --long: #59b57e;
+    --short: #d97873; --warn-bg: #2a1f12; --warn-ink: #e0a866;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 34px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 820px; margin: 0 auto; padding: 0 22px; }
+
+  /* ---------- type scale (golden-ratio informed) ---------- */
+  h1, h2, h3 { line-height: 1.15; text-wrap: balance; font-weight: 680; letter-spacing: -.01em; }
+  h1 { font-size: clamp(2.1rem, 6vw, 3.4rem); margin: 0 0 .4em; letter-spacing: -.03em; }
+  h2 { font-size: clamp(1.5rem, 3.4vw, 2.05rem); margin: 0 0 .3em; letter-spacing: -.02em; }
+  h3 { font-size: 1.16rem; margin: 1.8em 0 .35em; }
+  p { margin: 0 0 1.05em; }
+  a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  strong { font-weight: 680; color: var(--ink); }
+  .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+  .eyebrow {
+    font-family: var(--mono); font-size: .74rem; letter-spacing: .18em;
+    text-transform: uppercase; color: var(--accent); margin: 0 0 1.1em; font-weight: 500;
+  }
+  .eyebrow .n { color: var(--ink-faint); }
+
+  /* ---------- hero ---------- */
+  header.hero {
+    border-bottom: 1px solid var(--hair);
+    background:
+      radial-gradient(120% 90% at 88% -10%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 60%),
+      var(--ground);
+  }
+  .hero-inner { padding: 78px 0 52px; }
+  .hero .kicker {
+    font-family: var(--mono); font-size: .78rem; letter-spacing: .2em; text-transform: uppercase;
+    color: var(--ink-faint); margin-bottom: 20px; display: flex; align-items: center; gap: 12px;
+  }
+  .hero .kicker .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 22%, transparent); }
+  .hero p.lede { font-size: 1.24rem; color: var(--ink-soft); max-width: 60ch; margin-bottom: 0; }
+  .goldrule { display:flex; gap:0; height:6px; border-radius:3px; overflow:hidden; margin:30px 0 4px; max-width:420px; }
+  .goldrule span { display:block; }
+
+  /* ---------- section frame ---------- */
+  section { padding: 46px 0; border-bottom: 1px solid var(--hair); }
+  section:last-of-type { border-bottom: 0; }
+
+  /* ---------- callouts ---------- */
+  .note, .warn, .key {
+    border-radius: 12px; padding: 18px 20px; margin: 22px 0; font-size: .97rem;
+    border: 1px solid var(--hair-strong); background: var(--panel);
+  }
+  .note { border-left: 3px solid var(--teal); }
+  .key { border-left: 3px solid var(--accent); background: var(--panel-2); }
+  .warn { border-left: 3px solid var(--short); background: var(--warn-bg); color: var(--warn-ink); border-color: color-mix(in srgb, var(--short) 30%, var(--hair)); }
+  .warn strong { color: var(--warn-ink); }
+  .callout-label { font-family: var(--mono); font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; display:block; margin-bottom: 6px; opacity: .85; }
+
+  /* ---------- cards ---------- */
+  .cards { display: grid; gap: 14px; margin: 24px 0; }
+  @media (min-width: 620px){ .cards.two { grid-template-columns: 1fr 1fr; } }
+  .card { background: var(--panel); border: 1px solid var(--hair); border-radius: 12px; padding: 18px 20px; box-shadow: var(--shadow); }
+  .card h3 { margin: 0 0 .3em; font-size: 1.04rem; }
+  .card p { margin: 0; font-size: .93rem; color: var(--ink-soft); }
+
+  /* ---------- figures ---------- */
+  figure { margin: 26px 0; }
+  .fig-shell { background: var(--panel); border: 1px solid var(--hair); border-radius: 14px; padding: 18px; box-shadow: var(--shadow); overflow-x: auto; }
+  figcaption { font-size: .85rem; color: var(--ink-faint); margin-top: 12px; text-align: center; }
+  svg { display: block; max-width: 100%; height: auto; }
+
+  /* fib level table styling reused */
+  .levels { width:100%; border-collapse: collapse; font-family: var(--mono); font-size:.9rem; margin: 20px 0; }
+  .levels th, .levels td { text-align:left; padding: 9px 12px; border-bottom: 1px solid var(--hair); }
+  .levels th { font-size:.7rem; letter-spacing:.1em; text-transform:uppercase; color: var(--ink-faint); font-weight:600; }
+  .levels td.lv { color: var(--accent); font-weight:600; }
+  .levels tr:last-child td { border-bottom: 0; }
+
+  ul.tight { margin: 0 0 1.05em; padding-left: 1.2em; }
+  ul.tight li { margin-bottom: .4em; }
+  ul.tight li::marker { color: var(--accent); }
+
+  /* checklist */
+  .checklist { list-style: none; padding: 0; margin: 20px 0; display: grid; gap: 10px; }
+  .checklist li { display:flex; gap: 12px; align-items:flex-start; background: var(--panel); border:1px solid var(--hair); border-radius:10px; padding: 12px 14px; }
+  .checklist .box { flex:none; width:20px; height:20px; border-radius:5px; border:2px solid var(--accent); margin-top:2px; }
+  .checklist b { display:block; }
+  .checklist span { color: var(--ink-soft); font-size:.92rem; }
+
+  /* ---------- calculator ---------- */
+  .calc { background: var(--panel); border: 1px solid var(--hair-strong); border-radius: 16px; padding: 22px; box-shadow: var(--shadow); margin: 26px 0; }
+  .calc h3 { margin-top: 0; }
+  .calc-grid { display: grid; gap: 16px; }
+  @media (min-width: 560px){ .calc-grid { grid-template-columns: 1fr 1fr; } }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label { font-size: .8rem; letter-spacing: .04em; color: var(--ink-soft); font-weight: 600; }
+  .field input, .field select {
+    font-family: var(--mono); font-size: 1rem; padding: 10px 12px; border-radius: 9px;
+    border: 1px solid var(--hair-strong); background: var(--ground); color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .field input:focus, .field select:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
+  .calc-out {
+    margin-top: 20px; border-top: 1px dashed var(--hair-strong); padding-top: 18px;
+    display: grid; gap: 14px; grid-template-columns: repeat(3, 1fr);
+  }
+  @media (max-width: 520px){ .calc-out { grid-template-columns: 1fr; } }
+  .stat { background: var(--panel-2); border-radius: 11px; padding: 14px 16px; }
+  .stat .k { font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint); }
+  .stat .v { font-family: var(--mono); font-size: 1.5rem; font-weight: 640; font-variant-numeric: tabular-nums; margin-top: 3px; }
+  .stat .v small { font-size: .8rem; color: var(--ink-soft); font-weight: 500; }
+  .stat.flag .v { color: var(--short); }
+  .stat.ok .v { color: var(--long); }
+  .calc-msg { font-size: .9rem; margin-top: 14px; color: var(--ink-soft); }
+  .calc-msg.bad { color: var(--short); }
+
+  /* ---------- footer ---------- */
+  footer { padding: 44px 0 70px; color: var(--ink-faint); font-size: .85rem; }
+  footer p { margin: 0 0 .8em; }
+  .disc { border: 1px solid var(--hair); border-radius: 12px; padding: 18px 20px; background: var(--panel); }
+
+  /* long/short inline chips */
+  .chip { font-family: var(--mono); font-size:.8rem; padding: 2px 8px; border-radius: 999px; font-weight:600; }
+  .chip.long { color: var(--long); background: color-mix(in srgb, var(--long) 16%, transparent); }
+  .chip.short { color: var(--short); background: color-mix(in srgb, var(--short) 16%, transparent); }
+
+  @media (prefers-reduced-motion: reduce){ * { transition: none !important; animation: none !important; } }
+</style>
+
+<header class="hero">
+  <div class="wrap hero-inner">
+    <div class="kicker"><span class="dot"></span> Futures field manual · CL · MCL · ES · MES</div>
+    <h1>The Confluence Playbook</h1>
+    <p class="lede">How to read candles, map support and all-time highs, draw Fibonacci, stack indicators — and size every trade so one bad call can't end your account. Built for TopStep evaluations on oil and the S&amp;P.</p>
+    <div class="goldrule" aria-hidden="true">
+      <span style="flex:0.236;background:var(--hair-strong)"></span>
+      <span style="flex:0.382;background:var(--teal)"></span>
+      <span style="flex:0.5;background:var(--accent)"></span>
+      <span style="flex:0.618;background:var(--accent-bright)"></span>
+      <span style="flex:1;background:var(--short)"></span>
+    </div>
+  </div>
+</header>
+
+<main>
+
+<!-- ============ 0. REALITY ============ -->
+<section id="reality">
+  <div class="wrap">
+    <p class="eyebrow"><span class="n">00</span> &nbsp;/&nbsp; Start here</p>
+    <h2>Nobody predicts the market. You manage risk.</h2>
+    <p>Every tool in this guide — Fibonacci, support and resistance, all-time-high maps, moving averages — does <em>one honest thing</em>: it marks <strong>zones where the odds tilt slightly in your favor</strong>. None of them tells the future. If they did, the person who found the formula wouldn't be selling it.</p>
+    <p>So the game isn't "be right." Good traders are wrong <span class="mono">40–50%</span> of the time and still make money, because when they're right they make more than they lose when they're wrong. That only works if <strong>every trade has a pre-planned exit and a fixed dollar risk.</strong> That single habit — not any indicator — is what gets people through a TopStep evaluation.</p>
+    <div class="key">
+      <span class="callout-label">The one rule that matters most</span>
+      Risk a small, fixed slice of your account per trade — <strong>0.5% to 1%</strong>. On a $50,000 TopStep account with a daily loss limit near $1,000, that's roughly <span class="mono">$250–$500</span> of risk per trade, <em>max</em>. Decide your exit <strong>before</strong> you enter. The calculator further down does this math for you.
+    </div>
+    <div class="cards two">
+      <div class="card"><h3>What a chart <em>can</em> do</h3><p>Show where price reacted before, where buyers/sellers showed up, and where risk is well-defined. It gives you repeatable setups with a clear "I was wrong" price.</p></div>
+      <div class="card"><h3>What a chart <em>can't</em> do</h3><p>Tell you what happens next. News, a headline, or a big fund can invalidate any pattern instantly. That's why the stop exists — and why you never remove it.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 1. CANDLES ============ -->
+<section id="candles">
+  <div class="wrap">
+    <p class="eyebrow"><span class="n">01</span> &nbsp;/&nbsp; Reading price</p>
+    <h2>Reading a candle</h2>
+    <p>A candlestick packs four numbers into one shape, over a fixed slice of time (a "5-minute candle" covers five minutes). The body is the open-to-close range; the wicks are how far price stretched and got rejected.</p>
+
+    <figure>
+      <div class="fig-shell">
+        <svg viewBox="0 0 640 300" role="img" aria-label="Anatomy of bullish and bearish candlesticks">
+          <!-- bullish -->
+          <g font-family="var(--mono)" font-size="12">
+            <line x1="150" y1="30" x2="150" y2="270" stroke="var(--ink-faint)" stroke-width="2"/>
+            <rect x="126" y="110" width="48" height="110" rx="3" fill="var(--long)"/>
+            <text x="150" y="20" fill="var(--ink-soft)" text-anchor="middle">high</text>
+            <text x="150" y="288" fill="var(--ink-soft)" text-anchor="middle">low</text>
+            <line x1="176" y1="110" x2="250" y2="110" stroke="var(--hair-strong)" stroke-dasharray="3 3"/>
+            <line x1="176" y1="220" x2="250" y2="220" stroke="var(--hair-strong)" stroke-dasharray="3 3"/>
+            <text x="256" y="114" fill="var(--ink)">close</text>
+            <text x="256" y="224" fill="var(--ink)">open</text>
+            <text x="150" y="112" fill="var(--long)" text-anchor="middle" dy="-6" font-weight="700">▲</text>
+            <text x="150" y="255" fill="var(--long)" text-anchor="middle" font-weight="700" font-size="13">BULLISH</text>
+            <text x="150" y="272" fill="var(--ink-faint)" text-anchor="middle" font-size="11">close &gt; open</text>
+          </g>
+          <!-- bearish -->
+          <g font-family="var(--mono)" font-size="12">
+            <line x1="470" y1="30" x2="470" y2="270" stroke="var(--ink-faint)" stroke-width="2"/>
+            <rect x="446" y="90" width="48" height="110" rx="3" fill="var(--short)"/>
+            <text x="470" y="20" fill="var(--ink-soft)" text-anchor="middle">high</text>
+            <text x="470" y="288" fill="var(--ink-soft)" text-anchor="middle">low</text>
+            <line x1="420" y1="90" x2="396" y2="90" stroke="var(--hair-strong)" stroke-dasharray="3 3"/>
+            <line x1="420" y1="200" x2="396" y2="200" stroke="var(--hair-strong)" stroke-dasharray="3 3"/>
+            <text x="330" y="94" fill="var(--ink)">open</text>
+            <text x="326" y="204" fill="var(--ink)">close</text>
+            <text x="470" y="235" fill="var(--short)" text-anchor="middle" font-weight="700" font-size="13">BEARISH</text>
+            <text x="470" y="252" fill="var(--ink-faint)" text-anchor="middle" font-size="11">close &lt; open</text>
+          </g>
+        </svg>
+      </div>
+      <figcaption>The body is conviction; the wick is rejection. A long lower wick means sellers pushed price down and buyers slammed it back up.</figcaption>
+    </figure>
+
+    <h3>The handful of signals worth knowing</h3>
+    <ul class="tight">
+      <li><strong>Long lower wick (hammer)</strong> at a support zone — buyers defended that price. Interest for longs.</li>
+      <li><strong>Long upper wick (shooting star)</strong> at resistance or an all-time high — sellers rejected higher prices. Interest for shorts.</li>
+      <li><strong>Engulfing candle</strong> — a big candle that fully covers the prior one, in the opposite direction. A shift in who's in control.</li>
+      <li><strong>Big body, small wicks</strong> — strong momentum. Small body, big wicks (<em>doji</em>) — indecision; the market is undecided.</li>
+    </ul>
+    <div class="note">
+      <span class="callout-label">Context is everything</span>
+      A hammer in the middle of nowhere means little. The <em>same</em> hammer landing exactly on a support level that also lines up with a Fibonacci retracement — that's a signal. One candle alone is noise; a candle <strong>at a level</strong> is information. That layering is what "confluence" means, and it's the whole idea behind this playbook.
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2. SUPPORT / ATH ============ -->
+<section id="levels">
+  <div class="wrap">
+    <p class="eyebrow"><span class="n">02</span> &nbsp;/&nbsp; Mapping the field</p>
+    <h2>Support, resistance &amp; the all-time high</h2>
+    <p>Before any indicator, mark the <strong>horizontal levels</strong>. These are prices where the market has turned before — and markets have memory, because traders place orders where they got hurt or made money last time.</p>
+    <ul class="tight">
+      <li><strong>Support</strong> — a price floor buyers previously defended. Price tends to bounce there… until it doesn't (a "break").</li>
+      <li><strong>Resistance</strong> — a price ceiling sellers previously defended.</li>
+      <li><strong>All-time high (ATH)</strong> — the highest price ever traded. There's no overhead resistance above it, so breakouts can run — but false breakouts above an ATH are also common traps. Treat a fresh ATH as <em>either</em> a breakout <em>or</em> a rejection, and let the candle tell you which.</li>
+      <li><strong>Flip / retest</strong> — once broken, old resistance often becomes new support (and vice versa). The <em>retest</em> of a broken level is one of the cleanest, lowest-risk entries there is.</li>
+    </ul>
+
+    <figure>
+      <div class="fig-shell">
+        <svg viewBox="0 0 640 300" role="img" aria-label="Support becomes resistance flip and retest">
+          <!-- grid -->
+          <g stroke="var(--hair)" stroke-width="1">
+            <line x1="40" y1="60" x2="620" y2="60"/><line x1="40" y1="150" x2="620" y2="150"/><line x1="40" y1="240" x2="620" y2="240"/>
+          </g>
+          <!-- resistance-turned-support line -->
+          <line x1="40" y1="150" x2="620" y2="150" stroke="var(--accent)" stroke-width="2" stroke-dasharray="6 4"/>
+          <text x="46" y="142" fill="var(--accent)" font-family="var(--mono)" font-size="11">resistance → becomes support (flip)</text>
+          <!-- price path (polyline) -->
+          <polyline fill="none" stroke="var(--ink-soft)" stroke-width="2.5"
+            points="40,210 90,180 130,152 165,175 205,150 245,120 285,95 320,120 355,150 380,168 405,150 445,120 490,85 540,60 590,48"/>
+          <!-- retest marker -->
+          <circle cx="405" cy="150" r="9" fill="none" stroke="var(--long)" stroke-width="2.5"/>
+          <text x="415" y="185" fill="var(--long)" font-family="var(--mono)" font-size="11">retest = low-risk long</text>
+          <text x="590" y="40" fill="var(--ink-faint)" font-family="var(--mono)" font-size="10" text-anchor="end">new highs</text>
+        </svg>
+      </div>
+      <figcaption>Price breaks resistance, comes back to test it as support, holds, and continues. Your stop sits just below the level; your risk is tiny and defined.</figcaption>
+    </figure>
+
+    <h3>How to draw them (do this once per session)</h3>
+    <ol class="tight">
+      <li>Zoom out to the <strong>daily</strong> chart. Mark the 3–5 most obvious highs and lows price keeps reacting to. Fewer, stronger lines beat a cluttered chart.</li>
+      <li>Mark the current <strong>all-time high</strong> and the prior <strong>day's high and low</strong> (day traders lean on these constantly).</li>
+      <li>Drop to your trading timeframe (e.g. 5-min for CL, 5- or 15-min for ES) and note where those daily levels fall on your screen. Those are your battle lines for the day.</li>
+    </ol>
+  </div>
+</section>
+
+<!-- ============ 3. FIBONACCI ============ -->
+<section id="fib">
+  <div class="wrap">
+    <p class="eyebrow"><span class="n">03</span> &nbsp;/&nbsp; The golden ratio</p>
+    <h2>Fibonacci retracements &amp; extensions</h2>
+    <p>After a strong move, price rarely goes straight — it pulls back before continuing. Fibonacci retracement levels predict <em>how far</em> a pullback is likely to reach. They come from the golden ratio (<span class="mono">0.618</span>) that shows up throughout the Fibonacci sequence, and traders watch them so widely that they become partly self-fulfilling.</p>
+
+    <table class="levels">
+      <thead><tr><th>Level</th><th>What it means</th><th>How traders use it</th></tr></thead>
+      <tbody>
+        <tr><td class="lv">0.236</td><td>Shallow pullback</td><td>Very strong trend; price barely dips</td></tr>
+        <tr><td class="lv">0.382</td><td>Modest pullback</td><td>Common in healthy trends</td></tr>
+        <tr><td class="lv">0.500</td><td>Halfway back</td><td>Not a true Fib, but widely watched</td></tr>
+        <tr><td class="lv">0.618</td><td>The "golden pocket" (with 0.65)</td><td>The most-watched entry zone for continuation</td></tr>
+        <tr><td class="lv">0.786</td><td>Deep pullback</td><td>Last stand before the move is likely dead</td></tr>
+      </tbody>
+    </table>
+
+    <figure>
+      <div class="fig-shell">
+        <svg viewBox="0 0 640 320" role="img" aria-label="Fibonacci retracement drawn on an upswing">
+          <!-- swing low to swing high, retracement zones -->
+          <!-- level bands -->
+          <g font-family="var(--mono)" font-size="11">
+            <!-- 0% top (swing high) -->
+            <line x1="40" y1="50" x2="600" y2="50" stroke="var(--hair-strong)"/>
+            <text x="606" y="54" fill="var(--ink-faint)">0.0 · high</text>
+            <line x1="40" y1="98" x2="600" y2="98" stroke="var(--hair)"/>
+            <text x="606" y="102" fill="var(--ink-faint)">0.236</text>
+            <line x1="40" y1="134" x2="600" y2="134" stroke="var(--hair)"/>
+            <text x="606" y="138" fill="var(--ink-faint)">0.382</text>
+            <line x1="40" y1="160" x2="600" y2="160" stroke="var(--hair)"/>
+            <text x="606" y="164" fill="var(--ink-faint)">0.5</text>
+            <!-- golden pocket band -->
+            <rect x="40" y="186" width="560" height="26" fill="color-mix(in srgb, var(--accent) 22%, transparent)"/>
+            <line x1="40" y1="186" x2="600" y2="186" stroke="var(--accent)" stroke-width="2"/>
+            <line x1="40" y1="212" x2="600" y2="212" stroke="var(--accent)" stroke-width="2"/>
+            <text x="606" y="203" fill="var(--accent)" font-weight="700">0.618 golden pocket</text>
+            <line x1="40" y1="240" x2="600" y2="240" stroke="var(--hair)"/>
+            <text x="606" y="244" fill="var(--ink-faint)">0.786</text>
+            <!-- 100% swing low -->
+            <line x1="40" y1="278" x2="600" y2="278" stroke="var(--hair-strong)"/>
+            <text x="606" y="282" fill="var(--ink-faint)">1.0 · low</text>
+          </g>
+          <!-- price path: rally then pull back into golden pocket then continue -->
+          <polyline fill="none" stroke="var(--ink-soft)" stroke-width="2.6"
+            points="40,278 80,250 120,210 160,150 200,90 235,52 270,80 300,120 330,160 355,196 375,205 395,190 430,150 470,110 510,72 545,50 580,40"/>
+          <circle cx="375" cy="205" r="9" fill="none" stroke="var(--long)" stroke-width="2.5"/>
+          <text x="230" y="176" fill="var(--ink-faint)" font-family="var(--mono)" font-size="10">rally</text>
+        </svg>
+      </div>
+      <figcaption>Draw from swing <strong>low → high</strong> for an uptrend. Price rallies, retraces into the 0.618 golden pocket, finds buyers, and continues. Entry in the pocket; stop just below 0.786.</figcaption>
+    </figure>
+
+    <h3>How to draw it, exactly</h3>
+    <ul class="tight">
+      <li><strong>Uptrend:</strong> use the Fib tool, click the recent swing <em>low</em>, drag to the swing <em>high</em>. The levels appear as pullback targets below.</li>
+      <li><strong>Downtrend:</strong> click the swing <em>high</em>, drag to the swing <em>low</em>. Levels become bounce targets above.</li>
+      <li><strong>The trade:</strong> wait for price to reach the <span class="mono">0.618</span> pocket <em>and</em> print a reversal candle (hammer/engulfing) there. Enter, stop just beyond <span class="mono">0.786</span>, target the prior high (or a Fib <em>extension</em> like <span class="mono">1.272 / 1.618</span> for where the move might reach next).</li>
+    </ul>
+    <div class="note">
+      <span class="callout-label">Why it's not magic</span>
+      Fibonacci "works" partly because so many traders draw the same lines and place orders there. It fails all the time on its own. It becomes powerful only when the golden pocket lands <strong>on top of</strong> a support level you already marked, or a moving average — confluence again.
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. INDICATORS ============ -->
+<section id="indicators">
+  <div class="wrap">
+    <p class="eyebrow"><span class="n">04</span> &nbsp;/&nbsp; The instruments</p>
+    <h2>Three indicators, and what they actually tell you</h2>
+    <p>More indicators is not more edge — it's more contradiction. Pick a few that answer different questions and learn them cold. Here's a lean, honest set for futures.</p>
+    <div class="cards">
+      <div class="card">
+        <h3>VWAP <span style="color:var(--teal)">· fair value</span></h3>
+        <p>Volume-Weighted Average Price — the average price weighted by volume, reset each day. It's <em>the</em> intraday reference for ES/SPY: institutions benchmark to it. Price above VWAP = buyers in control; below = sellers. Pullbacks <em>to</em> VWAP are common entry spots.</p>
+      </div>
+      <div class="card">
+        <h3>EMA (9 &amp; 21) <span style="color:var(--teal)">· trend</span></h3>
+        <p>Exponential moving averages track trend direction and act as dynamic support/resistance. When the 9 is above the 21 and both point up, you favor longs. When price pulls back to the EMAs and bounces — that's your trend-continuation entry.</p>
+      </div>
+      <div class="card">
+        <h3>RSI (14) <span style="color:var(--teal)">· momentum</span></h3>
+        <p>Measures momentum 0–100. Above 70 "overbought," below 30 "oversold" — but in a strong trend it can stay pinned for a long time, so <strong>never short just because RSI is high.</strong> Its real value is <em>divergence</em>: price makes a new high but RSI doesn't → momentum is fading.</p>
+      </div>
+    </div>
+    <div class="warn">
+      <span class="callout-label">About "LMS" and prediction</span>
+      <strong>LMS</strong> (least-mean-squares) is a real signal-processing filter, and adaptive filters do get used in quantitative finance — but by teams with tick-level data, execution infrastructure, and PhDs, and even they don't "win every trade." It is not something you bolt onto a TopStep chart to forecast candles. Don't let anyone sell you an "LMS predictor." The indicators above, read as <em>context</em> rather than crystal balls, will serve you far better.
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5. PLAYBOOK ============ -->
+<section id="playbook">
+  <div class="wrap">
+    <p class="eyebrow"><span class="n">05</span> &nbsp;/&nbsp; Putting it together</p>
+    <h2>The confluence checklist</h2>
+    <p>Here's the whole method in one place. <strong>Do not take a trade unless several of these line up at the same price.</strong> The more boxes checked, the better the setup — and if only one is checked, you pass. There's always another trade.</p>
+    <ul class="checklist">
+      <li><span class="box" aria-hidden="true"></span><div><b>Trend agrees</b><span>Higher timeframe direction supports your trade. 9/21 EMA stacked in your direction.</span></div></li>
+      <li><span class="box" aria-hidden="true"></span><div><b>You're at a level</b><span>A marked support/resistance, VWAP, prior day high/low, or all-time high.</span></div></li>
+      <li><span class="box" aria-hidden="true"></span><div><b>Fibonacci confirms</b><span>The 0.618 golden pocket lands on that same level. Confluence.</span></div></li>
+      <li><span class="box" aria-hidden="true"></span><div><b>The candle confirms</b><span>A hammer, engulfing, or clear rejection candle prints <em>at</em> the level. Wait for it to close.</span></div></li>
+      <li><span class="box" aria-hidden="true"></span><div><b>Risk is defined &amp; small</b><span>Stop has an obvious home (beyond the level); dollar risk ≤ 1% of the account. Reward ≥ 2× the risk.</span></div></li>
+    </ul>
+
+    <h3>Two concrete examples</h3>
+    <div class="cards two">
+      <div class="card">
+        <h3>Oil — <span class="chip long">LONG</span> CL/MCL</h3>
+        <p>CL rallies hard off the prior day's low, pulls back. The 0.618 pocket lines up with that prior-day low <em>and</em> the rising 21-EMA. A hammer prints on the 5-min. Enter on its close, stop <span class="mono">$0.15–0.25</span> below the low, target the day's high. CL moves fast — MCL (1/10 the size) is the sane place to learn.</p>
+      </div>
+      <div class="card">
+        <h3>S&amp;P — <span class="chip short">SHORT</span> ES/MES</h3>
+        <p>ES pushes to a new all-time high but prints a shooting star with RSI divergence, then loses VWAP. Short the VWAP reclaim failure, stop above the ATH wick, target the prior support. Learn on MES first — it's <span class="mono">1/10</span> of ES and the tuition is 1/10 the price.</p>
+      </div>
+    </div>
+    <div class="key">
+      <span class="callout-label">Order of operations</span>
+      Levels first → trend second → Fibonacci third → candle last → <strong>size the trade before you click.</strong> The candle is the trigger, never the reason.
+    </div>
+  </div>
+</section>
+
+<!-- ============ 6. CALCULATOR ============ -->
+<section id="calc">
+  <div class="wrap">
+    <p class="eyebrow"><span class="n">06</span> &nbsp;/&nbsp; Do the math</p>
+    <h2>Position-size calculator</h2>
+    <p>This is the most important tool on the page. Enter your risk and your stop; it tells you how many contracts you can hold without breaking your rule — using real CME tick values. If it says the trade risks too much, <strong>the answer is fewer contracts, not a tighter stop you don't believe in.</strong></p>
+
+    <div class="calc">
+      <h3>What can I trade this setup with?</h3>
+      <div class="calc-grid">
+        <div class="field">
+          <label for="inst">Instrument</label>
+          <select id="inst">
+            <option value="1000" data-tick="10" data-tsz="0.01" data-entry="75.00" data-stop="74.75">CL — Crude Oil ($1,000 / pt)</option>
+            <option value="100" data-tick="1" data-tsz="0.01" data-entry="75.00" data-stop="74.75" selected>MCL — Micro Crude ($100 / pt)</option>
+            <option value="50" data-tick="12.5" data-tsz="0.25" data-entry="6000.00" data-stop="5990.00">ES — E-mini S&amp;P ($50 / pt)</option>
+            <option value="5" data-tick="1.25" data-tsz="0.25" data-entry="6000.00" data-stop="5990.00">MES — Micro E-mini ($5 / pt)</option>
+            <option value="5" data-tick="25" data-tsz="5" data-entry="100000" data-stop="99000">BTC — Bitcoin ($5 / $1 move)</option>
+            <option value="0.1" data-tick="0.5" data-tsz="5" data-entry="100000" data-stop="99000">MBT — Micro Bitcoin ($0.10 / $1 move)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="risk">Max $ risk on this trade</label>
+          <input id="risk" type="number" inputmode="decimal" value="300" min="0" step="10">
+        </div>
+        <div class="field">
+          <label for="entry">Entry price</label>
+          <input id="entry" type="number" inputmode="decimal" value="75.00" step="0.01">
+        </div>
+        <div class="field">
+          <label for="stop">Stop price</label>
+          <input id="stop" type="number" inputmode="decimal" value="74.75" step="0.01">
+        </div>
+      </div>
+      <div class="calc-out">
+        <div class="stat"><div class="k">Stop distance</div><div class="v" id="o-dist">—</div></div>
+        <div class="stat" id="o-size-wrap"><div class="k">Contracts you can hold</div><div class="v" id="o-size">—</div></div>
+        <div class="stat"><div class="k">Actual $ risk</div><div class="v" id="o-risk">—</div></div>
+      </div>
+      <p class="calc-msg" id="o-msg">Enter your numbers above.</p>
+    </div>
+    <p style="font-size:.85rem;color:var(--ink-faint)">Tick values are standard CME contract specs and don't change. Your <em>account</em> daily-loss and trailing-drawdown limits are set by TopStep — keep total open risk well under the daily limit so a single stop-out never ends your day.</p>
+  </div>
+</section>
+
+<!-- ============ 7. PLATFORM REALITY ============ -->
+<section id="platforms">
+  <div class="wrap">
+    <p class="eyebrow"><span class="n">07</span> &nbsp;/&nbsp; The platforms</p>
+    <h2>TopStep vs. Pocket Option — not the same game</h2>
+    <div class="cards two">
+      <div class="card">
+        <h3>TopStep · real futures</h3>
+        <p>You trade CME futures (CL, ES, and micros) in an evaluation. Legitimate, regulated products. You keep a share of profits if you pass and stay within the loss rules. Everything in this guide applies directly. The hard part is the <em>discipline</em> the rules force — which is the point.</p>
+      </div>
+      <div class="card">
+        <h3>Pocket Option · binary options</h3>
+        <p>A fixed win/lose bet on a price tick, with a payout structured so the house wins over time. Banned for US, UK, and EU retail traders, and heavily associated with scams. Reading candles well <em>cannot</em> overcome negative-expectancy math. This is the one place I'd tell you not to apply these skills.</p>
+      </div>
+    </div>
+    <div class="warn">
+      <span class="callout-label">Straight talk</span>
+      If money is tight, the honest move is: practice on a <strong>free simulator / paper account</strong> for weeks until your journal shows a real edge, learn on <strong>micros</strong> (MCL/MES) where a mistake costs a few dollars, and skip binary-options platforms entirely. Nobody has ever traded their way out of a hole on Pocket Option.
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="disc">
+      <p><strong>This is education, not financial advice.</strong> Trading futures and options involves substantial risk of loss and is not suitable for everyone. You can lose more than you deposit. Nothing here predicts market movements or guarantees any result — no strategy, indicator, or tool can. Past behavior of a level or pattern does not guarantee future behavior. Only risk money you can afford to lose entirely, and consider speaking with a licensed financial professional about your situation.</p>
+      <p style="margin-bottom:0;color:var(--ink-faint)">Built as a study aid · CL / MCL / ES / MES contract specs per CME · The "Visual Primitives" paper referenced in the request is a robotics vision-language-action study, unrelated to market prediction.</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+  (function(){
+    var inst = document.getElementById('inst');
+    var risk = document.getElementById('risk');
+    var entry = document.getElementById('entry');
+    var stop = document.getElementById('stop');
+    var oDist = document.getElementById('o-dist');
+    var oSize = document.getElementById('o-size');
+    var oRisk = document.getElementById('o-risk');
+    var oMsg  = document.getElementById('o-msg');
+    var sizeWrap = document.getElementById('o-size-wrap');
+
+    function fmt(n){ return n.toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:2}); }
+    function money(n){ return '$' + n.toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0}); }
+
+    function calc(){
+      var opt = inst.options[inst.selectedIndex];
+      var ptVal = parseFloat(inst.value);          // $ per full point
+      var tickSz = parseFloat(opt.getAttribute('data-tsz'));
+      var tickVal = parseFloat(opt.getAttribute('data-tick'));
+      var maxRisk = parseFloat(risk.value);
+      var e = parseFloat(entry.value);
+      var s = parseFloat(stop.value);
+
+      sizeWrap.className = 'stat';
+      if (isNaN(maxRisk) || isNaN(e) || isNaN(s) || maxRisk <= 0) {
+        oDist.textContent = oSize.textContent = oRisk.textContent = '—';
+        oMsg.className = 'calc-msg'; oMsg.textContent = 'Enter your numbers above.';
+        return;
+      }
+      var distPts = Math.abs(e - s);
+      if (distPts <= 0) {
+        oDist.textContent = '0'; oSize.textContent = '—'; oRisk.textContent = '—';
+        oMsg.className = 'calc-msg bad'; oMsg.textContent = 'Entry and stop can’t be the same price — you need a real stop distance.';
+        return;
+      }
+      var ticks = Math.round(distPts / tickSz);
+      var riskPerContract = distPts * ptVal;       // $ risk for 1 contract
+      var contracts = Math.floor(maxRisk / riskPerContract);
+      var actualRisk = contracts * riskPerContract;
+
+      oDist.innerHTML = fmt(distPts) + ' <small>pts · ' + ticks + ' ticks</small>';
+
+      if (contracts < 1) {
+        oSize.textContent = '0';
+        sizeWrap.className = 'stat flag';
+        oRisk.innerHTML = money(riskPerContract) + ' <small>for just 1</small>';
+        oMsg.className = 'calc-msg bad';
+        oMsg.textContent = 'Even 1 contract (' + money(riskPerContract) + ') exceeds your ' + money(maxRisk) + ' risk. Trade a smaller contract (a micro) or widen your risk budget — do NOT tighten the stop into the noise.';
+        return;
+      }
+
+      oSize.innerHTML = contracts + ' <small>contract' + (contracts>1?'s':'') + '</small>';
+      sizeWrap.className = 'stat ok';
+      oRisk.innerHTML = money(actualRisk) + ' <small>of ' + money(maxRisk) + '</small>';
+      oMsg.className = 'calc-msg';
+      oMsg.textContent = 'Holding ' + contracts + ' ' + opt.text.split(' ')[0] +
+        ' risks ' + money(actualRisk) + ' if stopped out. To clear a 2R target you’d aim for about ' +
+        money(actualRisk*2) + ' in profit.';
+    }
+
+    // When the instrument changes, load sensible example prices for that market
+    inst.addEventListener('change', function(){
+      var opt = inst.options[inst.selectedIndex];
+      var de = opt.getAttribute('data-entry'), ds = opt.getAttribute('data-stop');
+      if (de) entry.value = de;
+      if (ds) stop.value = ds;
+      calc();
+    });
+    [inst, risk, entry, stop].forEach(function(el){
+      el.addEventListener('input', calc);
+      el.addEventListener('change', calc);
+    });
+    calc();
+  })();
+</script>

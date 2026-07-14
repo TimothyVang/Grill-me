@@ -1,0 +1,638 @@
+<title>The Trade Journal — Prove Your Edge</title>
+<style>
+  :root {
+    --ground: #f6f3ec; --panel: #fffdf8; --panel-2: #efe9dc; --ink: #23222a;
+    --ink-soft: #55525c; --ink-faint: #837f88; --hair: #ddd6c6; --hair-strong: #c7bfab;
+    --accent: #b07d24; --accent-bright: #c89544; --teal: #2f7a78; --long: #3f8a5e;
+    --short: #b34a44; --warn-bg: #fbeede; --warn-ink: #8a4a12;
+    --shadow: 0 1px 2px rgba(30,25,15,.06), 0 8px 30px rgba(30,25,15,.06);
+    --mono: ui-monospace, "SF Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground: #101218; --panel: #171a22; --panel-2: #1e222c; --ink: #e9e6df;
+      --ink-soft: #a9a6a0; --ink-faint: #726f6a; --hair: #262a34; --hair-strong: #333844;
+      --accent: #cf9f52; --accent-bright: #e2b46a; --teal: #4fb0ad; --long: #59b57e;
+      --short: #d97873; --warn-bg: #2a1f12; --warn-ink: #e0a866;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 34px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="light"] {
+    --ground:#f6f3ec;--panel:#fffdf8;--panel-2:#efe9dc;--ink:#23222a;--ink-soft:#55525c;
+    --ink-faint:#837f88;--hair:#ddd6c6;--hair-strong:#c7bfab;--accent:#b07d24;--accent-bright:#c89544;
+    --teal:#2f7a78;--long:#3f8a5e;--short:#b34a44;--warn-bg:#fbeede;--warn-ink:#8a4a12;
+    --shadow:0 1px 2px rgba(30,25,15,.06),0 8px 30px rgba(30,25,15,.06);
+  }
+  :root[data-theme="dark"] {
+    --ground:#101218;--panel:#171a22;--panel-2:#1e222c;--ink:#e9e6df;--ink-soft:#a9a6a0;
+    --ink-faint:#726f6a;--hair:#262a34;--hair-strong:#333844;--accent:#cf9f52;--accent-bright:#e2b46a;
+    --teal:#4fb0ad;--long:#59b57e;--short:#d97873;--warn-bg:#2a1f12;--warn-ink:#e0a866;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 34px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing:border-box; }
+  html { -webkit-text-size-adjust:100%; }
+  body { margin:0; background:var(--ground); color:var(--ink); font-family:var(--sans);
+    font-size:16px; line-height:1.55; -webkit-font-smoothing:antialiased; }
+  .wrap { max-width:1020px; margin:0 auto; padding:0 20px; }
+  .mono { font-family:var(--mono); font-variant-numeric:tabular-nums; }
+
+  h1,h2,h3 { line-height:1.15; text-wrap:balance; font-weight:680; letter-spacing:-.01em; margin:0; }
+  h1 { font-size:clamp(1.9rem,5vw,2.9rem); letter-spacing:-.03em; }
+  h2 { font-size:1.3rem; margin-bottom:.2em; }
+  p { margin:0 0 1em; }
+  a { color:var(--accent); }
+
+  header.hero { border-bottom:1px solid var(--hair);
+    background: radial-gradient(120% 90% at 90% -20%, color-mix(in srgb,var(--accent) 15%,transparent), transparent 60%), var(--ground); }
+  .hero-inner { padding:52px 0 40px; }
+  .kicker { font-family:var(--mono); font-size:.74rem; letter-spacing:.2em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:16px; display:flex; align-items:center; gap:11px; }
+  .kicker .dot { width:7px; height:7px; border-radius:50%; background:var(--accent); box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 22%,transparent); }
+  .hero p.lede { font-size:1.12rem; color:var(--ink-soft); max-width:62ch; margin:.6em 0 0; }
+
+  section { padding:34px 0; }
+  .sec-label { font-family:var(--mono); font-size:.72rem; letter-spacing:.16em; text-transform:uppercase; color:var(--accent); margin-bottom:14px; }
+
+  /* ---- dashboard tiles ---- */
+  .tiles { display:grid; gap:13px; grid-template-columns:repeat(4,1fr); }
+  @media (max-width:760px){ .tiles { grid-template-columns:repeat(2,1fr); } }
+  .tile { background:var(--panel); border:1px solid var(--hair); border-radius:14px; padding:16px 18px; box-shadow:var(--shadow); }
+  .tile .k { font-size:.7rem; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-faint); }
+  .tile .v { font-family:var(--mono); font-variant-numeric:tabular-nums; font-size:1.72rem; font-weight:680; margin-top:5px; letter-spacing:-.02em; }
+  .tile .v small { font-size:.72rem; font-weight:500; color:var(--ink-soft); letter-spacing:0; }
+  .tile.pos .v { color:var(--long); }
+  .tile.neg .v { color:var(--short); }
+  .tile .sub { font-size:.76rem; color:var(--ink-faint); margin-top:3px; }
+
+  .subtiles { display:grid; gap:11px; grid-template-columns:repeat(4,1fr); margin-top:13px; }
+  @media (max-width:760px){ .subtiles { grid-template-columns:repeat(2,1fr); } }
+  .subtile { background:var(--panel-2); border-radius:11px; padding:11px 14px; }
+  .subtile .k { font-size:.67rem; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint); }
+  .subtile .v { font-family:var(--mono); font-variant-numeric:tabular-nums; font-size:1.05rem; font-weight:640; margin-top:2px; }
+  .subtile .v.pos { color:var(--long); } .subtile .v.neg { color:var(--short); }
+
+  /* ---- equity curve ---- */
+  .chart-card { background:var(--panel); border:1px solid var(--hair); border-radius:14px; padding:18px 20px 14px; box-shadow:var(--shadow); margin-top:13px; }
+  .chart-head { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px; }
+  .chart-head .t { font-size:.82rem; font-weight:640; color:var(--ink-soft); }
+  .chart-head .r { font-family:var(--mono); font-size:.76rem; color:var(--ink-faint); }
+  .chart-wrap { width:100%; overflow:hidden; }
+  svg.equity { display:block; width:100%; height:auto; }
+  .chart-empty { color:var(--ink-faint); font-size:.9rem; text-align:center; padding:40px 0; }
+
+  /* ---- form ---- */
+  .form-card { background:var(--panel); border:1px solid var(--hair-strong); border-radius:16px; padding:20px; box-shadow:var(--shadow); }
+  .form-grid { display:grid; gap:13px; grid-template-columns:repeat(4,1fr); }
+  @media (max-width:760px){ .form-grid { grid-template-columns:repeat(2,1fr); } }
+  @media (max-width:460px){ .form-grid { grid-template-columns:1fr; } }
+  .field { display:flex; flex-direction:column; gap:5px; }
+  .field.wide { grid-column:1 / -1; }
+  .field label { font-size:.72rem; letter-spacing:.04em; text-transform:uppercase; color:var(--ink-soft); font-weight:640; }
+  .field input, .field select {
+    font-family:var(--mono); font-size:.95rem; padding:9px 11px; border-radius:9px;
+    border:1px solid var(--hair-strong); background:var(--ground); color:var(--ink); width:100%;
+    font-variant-numeric:tabular-nums;
+  }
+  .field.wide input { font-family:var(--sans); }
+  .field input:focus, .field select:focus { outline:2px solid var(--accent); outline-offset:1px; border-color:var(--accent); }
+  .form-foot { display:flex; align-items:center; gap:14px; margin-top:16px; flex-wrap:wrap; }
+  .btn { font-family:var(--sans); font-size:.92rem; font-weight:640; padding:10px 20px; border-radius:10px; border:1px solid transparent; cursor:pointer; }
+  .btn.primary { background:var(--accent); color:#fff; }
+  .btn.primary:hover { background:var(--accent-bright); }
+  .btn.ghost { background:transparent; border-color:var(--hair-strong); color:var(--ink-soft); }
+  .btn.ghost:hover { border-color:var(--accent); color:var(--accent); }
+  .btn:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  .live-preview { font-family:var(--mono); font-size:.85rem; color:var(--ink-faint); }
+  .live-preview b { color:var(--ink); }
+  .live-preview .g { color:var(--long); } .live-preview .r { color:var(--short); }
+
+  /* per-market breakdown */
+  .mkt-card { background:var(--panel); border:1px solid var(--hair); border-radius:14px; padding:16px 18px 14px; box-shadow:var(--shadow); margin-top:13px; }
+  .mkt-head { font-size:.82rem; font-weight:640; color:var(--ink-soft); margin-bottom:11px; display:flex; justify-content:space-between; align-items:baseline; gap:10px; flex-wrap:wrap; }
+  .mkt-head span { font-weight:500; color:var(--ink-faint); font-size:.76rem; }
+  table.mkt-t { min-width:520px; }
+  table.mkt-t td.fam { font-weight:640; color:var(--ink); }
+  table.mkt-t td.pos { color:var(--long); font-weight:640; } table.mkt-t td.neg { color:var(--short); font-weight:640; }
+  table.mkt-t td .thin { color:var(--ink-faint); font-weight:500; }
+  .mkt-hint { font-size:.82rem; color:var(--ink-faint); margin:11px 0 0; }
+  .mkt-hint b { color:var(--ink); }
+
+  /* ---- table ---- */
+  .tbl-tools { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:12px; }
+  .tbl-tools .count { font-size:.85rem; color:var(--ink-faint); }
+  .tbl-shell { overflow-x:auto; border:1px solid var(--hair); border-radius:14px; box-shadow:var(--shadow); }
+  table.trades { width:100%; border-collapse:collapse; font-size:.86rem; background:var(--panel); min-width:720px; }
+  table.trades th, table.trades td { padding:10px 12px; text-align:right; border-bottom:1px solid var(--hair); white-space:nowrap; }
+  table.trades th { font-size:.64rem; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint); font-weight:640; background:var(--panel-2); position:sticky; top:0; }
+  table.trades th:first-child, table.trades td:first-child { text-align:left; }
+  table.trades td.mono, table.trades th.mono { font-family:var(--mono); font-variant-numeric:tabular-nums; }
+  table.trades tr:last-child td { border-bottom:0; }
+  table.trades tbody tr:hover { background:color-mix(in srgb,var(--accent) 6%,transparent); }
+  .dir { font-family:var(--mono); font-size:.72rem; font-weight:700; padding:2px 7px; border-radius:999px; }
+  .dir.long { color:var(--long); background:color-mix(in srgb,var(--long) 16%,transparent); }
+  .dir.short { color:var(--short); background:color-mix(in srgb,var(--short) 16%,transparent); }
+  td.pnl.pos, td.r.pos { color:var(--long); font-weight:640; }
+  td.pnl.neg, td.r.neg { color:var(--short); font-weight:640; }
+  .del { background:none; border:0; color:var(--ink-faint); cursor:pointer; font-size:1rem; padding:2px 6px; border-radius:6px; line-height:1; }
+  .del:hover { color:var(--short); background:color-mix(in srgb,var(--short) 12%,transparent); }
+  .setup-cell { max-width:220px; overflow:hidden; text-overflow:ellipsis; color:var(--ink-soft); }
+
+  .empty-state { background:var(--panel); border:1px dashed var(--hair-strong); border-radius:14px; padding:40px 24px; text-align:center; }
+  .empty-state p { color:var(--ink-faint); margin:0 0 16px; }
+
+  .note { border-radius:12px; padding:15px 18px; margin:18px 0 0; font-size:.9rem; border:1px solid var(--hair-strong); background:var(--panel); border-left:3px solid var(--teal); color:var(--ink-soft); }
+  .note b { color:var(--ink); }
+  .callout-label { font-family:var(--mono); font-size:.7rem; letter-spacing:.13em; text-transform:uppercase; display:block; margin-bottom:5px; color:var(--teal); }
+
+  footer { padding:34px 0 60px; color:var(--ink-faint); font-size:.82rem; }
+  .disc { border:1px solid var(--hair); border-radius:12px; padding:15px 18px; background:var(--panel); }
+
+  @media (prefers-reduced-motion:reduce){ *{transition:none!important;animation:none!important;} }
+</style>
+
+<header class="hero">
+  <div class="wrap hero-inner">
+    <div class="kicker"><span class="dot"></span> Trade journal · saves in your browser · CL · MCL · ES · MES · BTC · MBT</div>
+    <h1>Prove your edge.</h1>
+    <p class="lede">Log every trade. This tool does the math — P&amp;L, R-multiple, win rate, expectancy, profit factor — so after 30–50 trades you know whether your strategy actually works, before real money is on the line. Your data stays on this device.</p>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- DASHBOARD -->
+  <section id="dash">
+    <div class="sec-label">The scoreboard</div>
+    <div class="tiles" id="tiles">
+      <div class="tile" id="t-pnl"><div class="k">Net P&amp;L</div><div class="v">—</div><div class="sub">across all trades</div></div>
+      <div class="tile" id="t-win"><div class="k">Win rate</div><div class="v">—</div><div class="sub">wins / total</div></div>
+      <div class="tile" id="t-exp"><div class="k">Expectancy</div><div class="v">—</div><div class="sub">avg R per trade</div></div>
+      <div class="tile" id="t-pf"><div class="k">Profit factor</div><div class="v">—</div><div class="sub">gross win / gross loss</div></div>
+    </div>
+    <div class="subtiles" id="subtiles">
+      <div class="subtile"><div class="k">Trades</div><div class="v" id="s-n">0</div></div>
+      <div class="subtile"><div class="k">Avg win</div><div class="v" id="s-aw">—</div></div>
+      <div class="subtile"><div class="k">Avg loss</div><div class="v" id="s-al">—</div></div>
+      <div class="subtile"><div class="k">Best / worst</div><div class="v" id="s-bw">—</div></div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-head">
+        <span class="t">Equity curve — cumulative P&amp;L</span>
+        <span class="r" id="eq-final"></span>
+      </div>
+      <div class="chart-wrap" id="eq-wrap">
+        <div class="chart-empty" id="eq-empty">Your equity curve appears here once you log a trade.</div>
+        <svg class="equity" id="eq-svg" viewBox="0 0 900 240" preserveAspectRatio="none" style="display:none" role="img" aria-label="Cumulative profit and loss over trades"></svg>
+      </div>
+    </div>
+
+    <div class="mkt-card" id="mkt-card" style="display:none">
+      <div class="mkt-head">Per-market breakdown <span>which market is your edge in?</span></div>
+      <div class="tbl-shell">
+        <table class="trades mkt-t">
+          <thead>
+            <tr>
+              <th>Market</th><th class="mono">Trades</th><th class="mono">Win %</th>
+              <th class="mono">Net P&amp;L</th><th class="mono">Expectancy</th><th class="mono">Profit factor</th>
+            </tr>
+          </thead>
+          <tbody id="mkt-body"></tbody>
+        </table>
+      </div>
+      <p class="mkt-hint" id="mkt-hint"></p>
+    </div>
+
+    <div class="note" id="edge-note">
+      <span class="callout-label">How to read this</span>
+      <b>Expectancy</b> is the number that matters most: your average return per trade in <b>R</b> (multiples of the risk you planned). Positive expectancy = a real edge. <b>Profit factor</b> above ~1.3 is healthy. One or two trades tell you nothing — judge the numbers only after <b>30+ trades</b>, and the same goes <em>per market</em> below: don't judge Bitcoin on 4 trades.
+    </div>
+  </section>
+
+  <!-- LOG A TRADE -->
+  <section id="log">
+    <div class="sec-label">Log a trade</div>
+    <div class="form-card">
+      <div class="form-grid">
+        <div class="field">
+          <label for="f-date">Date</label>
+          <input type="date" id="f-date">
+        </div>
+        <div class="field">
+          <label for="f-market">Market</label>
+          <select id="f-market">
+            <option value="MCL" data-pv="100">MCL — Micro Crude</option>
+            <option value="CL" data-pv="1000">CL — Crude Oil</option>
+            <option value="MES" data-pv="5">MES — Micro E-mini</option>
+            <option value="ES" data-pv="50">ES — E-mini S&amp;P</option>
+            <option value="MBT" data-pv="0.1">MBT — Micro Bitcoin</option>
+            <option value="BTC" data-pv="5">BTC — Bitcoin</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="f-dir">Direction</label>
+          <select id="f-dir">
+            <option value="long">Long</option>
+            <option value="short">Short</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="f-qty">Contracts</label>
+          <input type="number" id="f-qty" value="1" min="1" step="1">
+        </div>
+        <div class="field">
+          <label for="f-entry">Entry price</label>
+          <input type="number" id="f-entry" step="0.01" inputmode="decimal">
+        </div>
+        <div class="field">
+          <label for="f-stop">Stop (planned)</label>
+          <input type="number" id="f-stop" step="0.01" inputmode="decimal">
+        </div>
+        <div class="field">
+          <label for="f-exit">Exit price</label>
+          <input type="number" id="f-exit" step="0.01" inputmode="decimal">
+        </div>
+        <div class="field">
+          <label for="f-conf">Confluence (0–5)</label>
+          <input type="number" id="f-conf" min="0" max="5" step="1" placeholder="how many boxes?">
+        </div>
+        <div class="field wide">
+          <label for="f-setup">Setup &amp; notes — what was your reason? (e.g. "0.618 pocket + prior-day low + hammer")</label>
+          <input type="text" id="f-setup" placeholder="The reason you took the trade, and how it felt / what you learned">
+        </div>
+      </div>
+      <div class="form-foot">
+        <button class="btn primary" id="add-btn">Add trade</button>
+        <span class="live-preview" id="preview">Fill entry, stop &amp; exit to preview P&amp;L and R.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- TRADES -->
+  <section id="list">
+    <div class="tbl-tools">
+      <div class="sec-label" style="margin:0">Your trades</div>
+      <div style="display:flex; gap:10px; align-items:center;">
+        <span class="count" id="rowcount"></span>
+        <button class="btn ghost" id="sample-btn">Load sample data</button>
+        <button class="btn ghost" id="export-btn">Export CSV</button>
+        <button class="btn ghost" id="clear-btn">Clear all</button>
+      </div>
+    </div>
+
+    <div id="empty" class="empty-state">
+      <p>No trades yet. Log your first one above — or load a few sample trades to see how the scoreboard works.</p>
+      <button class="btn primary" id="sample-btn-2">Load sample data</button>
+    </div>
+
+    <div class="tbl-shell" id="tbl-shell" style="display:none">
+      <table class="trades">
+        <thead>
+          <tr>
+            <th>Date</th><th>Market</th><th>Dir</th><th class="mono">Qty</th>
+            <th class="mono">Entry</th><th class="mono">Stop</th><th class="mono">Exit</th>
+            <th class="mono">Risk $</th><th class="mono">P&amp;L $</th><th class="mono">R</th>
+            <th>Setup / notes</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="disc">
+      <p style="margin-bottom:.7em"><b>Your data is stored only in this browser</b> (localStorage) — it isn't uploaded anywhere. That also means it can be lost if you clear your browser or switch devices, so <b>Export CSV regularly</b> to keep a backup.</p>
+      <p style="margin:0; color:var(--ink-faint)">Education, not financial advice. A journal measures what happened; it doesn't predict what's next. Trade only what you can afford to lose. Companion to <em>The Confluence Playbook</em>.</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var KEY = 'confluence_journal_v1';
+  var PV = { CL:1000, MCL:100, ES:50, MES:5, BTC:5, MBT:0.1 };
+  var FAM = { CL:'Oil', MCL:'Oil', ES:'S&P', MES:'S&P', BTC:'Bitcoin', MBT:'Bitcoin' };
+  var FAM_ORDER = ['Oil','S&P','Bitcoin'];
+  var trades = [];
+
+  // ---- storage ----
+  function load(){
+    try { var raw = localStorage.getItem(KEY); trades = raw ? JSON.parse(raw) : []; }
+    catch(e){ trades = []; }
+    if(!Array.isArray(trades)) trades = [];
+  }
+  function save(){
+    try { localStorage.setItem(KEY, JSON.stringify(trades)); } catch(e){}
+  }
+
+  // ---- math ----
+  function calc(t){
+    var pv = PV[t.market] || 0;
+    var pnl = (t.dir === 'long' ? (t.exit - t.entry) : (t.entry - t.exit)) * pv * t.qty;
+    var risk = Math.abs(t.entry - t.stop) * pv * t.qty;
+    var r = risk > 0 ? pnl / risk : null;
+    return { pnl: pnl, risk: risk, r: r };
+  }
+  function money(n, dp){
+    if(n === null || isNaN(n)) return '—';
+    var s = Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:dp||0,maximumFractionDigits:dp||0});
+    return (n<0?'−$':'$') + s;
+  }
+  function fnum(n,dp){ return n.toLocaleString('en-US',{minimumFractionDigits:dp,maximumFractionDigits:dp}); }
+
+  // ---- id (no Date.now / Math.random needed) ----
+  var idc = 0;
+  function nextId(){ idc += 1; return 'id' + idc + '_' + trades.length; }
+
+  // ---- render dashboard ----
+  function setTile(id, valHTML, cls, sub){
+    var el = document.getElementById(id);
+    el.querySelector('.v').innerHTML = valHTML;
+    el.className = 'tile' + (cls ? ' ' + cls : '');
+    if(sub!==undefined) el.querySelector('.sub').textContent = sub;
+  }
+
+  function renderDash(){
+    var n = trades.length;
+    document.getElementById('s-n').textContent = n;
+    if(n === 0){
+      setTile('t-pnl','—','','across all trades');
+      setTile('t-win','—','','wins / total');
+      setTile('t-exp','—','','avg R per trade');
+      setTile('t-pf','—','','gross win / gross loss');
+      document.getElementById('s-aw').textContent='—';
+      document.getElementById('s-al').textContent='—';
+      document.getElementById('s-bw').textContent='—';
+      document.getElementById('eq-svg').style.display='none';
+      document.getElementById('eq-empty').style.display='block';
+      document.getElementById('eq-final').textContent='';
+      return;
+    }
+    var net=0, wins=0, losses=0, grossW=0, grossL=0, rsum=0, rcount=0, best=-Infinity, worst=Infinity;
+    var wSum=0, lSum=0;
+    trades.forEach(function(t){
+      var c = calc(t);
+      net += c.pnl;
+      if(c.pnl > 0){ wins++; grossW += c.pnl; wSum += c.pnl; }
+      else if(c.pnl < 0){ losses++; grossL += -c.pnl; lSum += c.pnl; }
+      if(c.r !== null){ rsum += c.r; rcount++; }
+      if(c.pnl > best) best = c.pnl;
+      if(c.pnl < worst) worst = c.pnl;
+    });
+    var winRate = (wins / n) * 100;
+    var exp = rcount ? rsum / rcount : null;
+    var pf = grossL > 0 ? grossW / grossL : (grossW > 0 ? Infinity : 0);
+
+    setTile('t-pnl', money(net,0), net>0?'pos':(net<0?'neg':''), 'across '+n+' trade'+(n>1?'s':''));
+    setTile('t-win', fnum(winRate,0)+'<small>%</small>', '', wins+'W / '+losses+'L');
+    setTile('t-exp', exp===null?'—':(exp>=0?'+':'−')+fnum(Math.abs(exp),2)+'<small>R</small>', exp>0?'pos':(exp<0?'neg':''), rcount<n?('from '+rcount+' with a stop'):'avg R per trade');
+    setTile('t-pf', pf===Infinity?'∞':fnum(pf,2), pf>=1?'pos':(pf<1?'neg':''), 'gross win / gross loss');
+
+    document.getElementById('s-aw').innerHTML = wins? '<span class="pos">'+money(wSum/wins,0)+'</span>' : '—';
+    document.getElementById('s-al').innerHTML = losses? '<span class="neg">'+money(lSum/losses,0)+'</span>' : '—';
+    document.getElementById('s-bw').innerHTML = '<span class="pos">'+money(best,0)+'</span> / <span class="neg">'+money(worst,0)+'</span>';
+
+    renderEquity();
+  }
+
+  // ---- equity curve ----
+  function renderEquity(){
+    var svg = document.getElementById('eq-svg');
+    var empty = document.getElementById('eq-empty');
+    if(trades.length === 0){ svg.style.display='none'; empty.style.display='block'; return; }
+    svg.style.display='block'; empty.style.display='none';
+
+    var W=900, H=240, padX=8, padTop=14, padBot=14;
+    // cumulative series starting at 0
+    var cum=[0], run=0;
+    trades.forEach(function(t){ run += calc(t).pnl; cum.push(run); });
+    var min=Math.min.apply(null,cum), max=Math.max.apply(null,cum);
+    if(min===max){ min-=1; max+=1; }
+    var span = max-min;
+    var innerW = W - padX*2, innerH = H - padTop - padBot;
+    function X(i){ return padX + (cum.length===1?0:(i/(cum.length-1))*innerW); }
+    function Y(v){ return padTop + (1-(v-min)/span)*innerH; }
+
+    var final = cum[cum.length-1];
+    var line = '', area = '';
+    cum.forEach(function(v,i){ var x=X(i).toFixed(1), y=Y(v).toFixed(1); line += (i?'L':'M')+x+' '+y+' '; });
+    area = line + 'L'+X(cum.length-1).toFixed(1)+' '+(H-padBot)+' L'+X(0).toFixed(1)+' '+(H-padBot)+' Z';
+
+    var zeroY = Y(0).toFixed(1);
+    var col = final>=0 ? 'var(--long)' : 'var(--short)';
+    var fillCol = final>=0 ? 'var(--long)' : 'var(--short)';
+    var ex = X(cum.length-1).toFixed(1), ey = Y(final).toFixed(1);
+
+    svg.innerHTML =
+      '<defs><linearGradient id="eqfill" x1="0" y1="0" x2="0" y2="1">'+
+        '<stop offset="0%" stop-color="'+fillCol+'" stop-opacity="0.22"/>'+
+        '<stop offset="100%" stop-color="'+fillCol+'" stop-opacity="0"/>'+
+      '</linearGradient></defs>'+
+      // zero baseline
+      '<line x1="'+padX+'" y1="'+zeroY+'" x2="'+(W-padX)+'" y2="'+zeroY+'" stroke="var(--hair-strong)" stroke-width="1" stroke-dasharray="4 4"/>'+
+      '<path d="'+area+'" fill="url(#eqfill)"/>'+
+      '<path d="'+line+'" fill="none" stroke="'+col+'" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>'+
+      '<circle cx="'+ex+'" cy="'+ey+'" r="4.5" fill="'+col+'"/>';
+
+    document.getElementById('eq-final').textContent = 'Net: ' + money(final,0);
+  }
+
+  // ---- render table ----
+  function renderTable(){
+    var tbody = document.getElementById('tbody');
+    var shell = document.getElementById('tbl-shell');
+    var empty = document.getElementById('empty');
+    document.getElementById('rowcount').textContent = trades.length ? (trades.length+' logged') : '';
+    if(trades.length === 0){ shell.style.display='none'; empty.style.display='block'; tbody.innerHTML=''; return; }
+    shell.style.display='block'; empty.style.display='none';
+
+    // newest first
+    var rows = trades.map(function(t,i){ return {t:t,i:i}; }).reverse();
+    tbody.innerHTML = rows.map(function(o){
+      var t=o.t, c=calc(t);
+      var pnlCls = c.pnl>0?'pos':(c.pnl<0?'neg':'');
+      var rCls = c.r===null?'':(c.r>0?'pos':(c.r<0?'neg':''));
+      var rTxt = c.r===null?'—':(c.r>=0?'+':'−')+fnum(Math.abs(c.r),2)+'R';
+      var conf = (t.conf!==null && t.conf!==undefined && t.conf!=='') ? (' · '+t.conf+'/5') : '';
+      return '<tr>'+
+        '<td class="mono">'+(t.date||'')+'</td>'+
+        '<td>'+t.market+'</td>'+
+        '<td><span class="dir '+t.dir+'">'+(t.dir==='long'?'LONG':'SHORT')+'</span></td>'+
+        '<td class="mono">'+t.qty+'</td>'+
+        '<td class="mono">'+fnum(t.entry, t.entry>=1000?0:2)+'</td>'+
+        '<td class="mono">'+fnum(t.stop, t.stop>=1000?0:2)+'</td>'+
+        '<td class="mono">'+fnum(t.exit, t.exit>=1000?0:2)+'</td>'+
+        '<td class="mono">'+(c.risk>0?money(c.risk,0):'—')+'</td>'+
+        '<td class="mono pnl '+pnlCls+'">'+money(c.pnl,0)+'</td>'+
+        '<td class="mono r '+rCls+'">'+rTxt+'</td>'+
+        '<td class="setup-cell" title="'+(t.setup||'').replace(/"/g,'&quot;')+'">'+(t.setup||'')+conf+'</td>'+
+        '<td><button class="del" data-id="'+t.id+'" aria-label="Delete trade">✕</button></td>'+
+      '</tr>';
+    }).join('');
+
+    Array.prototype.forEach.call(tbody.querySelectorAll('.del'), function(b){
+      b.addEventListener('click', function(){
+        var id = b.getAttribute('data-id');
+        trades = trades.filter(function(t){ return t.id !== id; });
+        save(); renderAll();
+      });
+    });
+  }
+
+  // ---- per-market breakdown ----
+  function renderMarkets(){
+    var card = document.getElementById('mkt-card');
+    var body = document.getElementById('mkt-body');
+    var hint = document.getElementById('mkt-hint');
+    if(trades.length === 0){ card.style.display='none'; return; }
+
+    // aggregate by family
+    var agg = {};
+    trades.forEach(function(t){
+      var fam = FAM[t.market] || t.market;
+      if(!agg[fam]) agg[fam] = {n:0, wins:0, losses:0, net:0, grossW:0, grossL:0, rSum:0, rCount:0};
+      var c = calc(t), a = agg[fam];
+      a.n++; a.net += c.pnl;
+      if(c.pnl>0){ a.wins++; a.grossW += c.pnl; }
+      else if(c.pnl<0){ a.losses++; a.grossL += -c.pnl; }
+      if(c.r!==null){ a.rSum += c.r; a.rCount++; }
+    });
+
+    var fams = FAM_ORDER.filter(function(f){ return agg[f]; });
+    if(!fams.length){ card.style.display='none'; return; }
+    card.style.display='block';
+
+    body.innerHTML = fams.map(function(f){
+      var a = agg[f];
+      var wr = Math.round(a.wins/a.n*100);
+      var exp = a.rCount ? a.rSum/a.rCount : null;
+      var pf = a.grossL>0 ? a.grossW/a.grossL : (a.grossW>0?Infinity:0);
+      var thin = a.n<5 ? ' <span class="thin">· thin</span>' : '';
+      return '<tr>'+
+        '<td class="fam">'+f+'</td>'+
+        '<td class="mono">'+a.n+thin+'</td>'+
+        '<td class="mono">'+wr+'%</td>'+
+        '<td class="mono '+(a.net>0?'pos':(a.net<0?'neg':''))+'">'+money(a.net,0)+'</td>'+
+        '<td class="mono '+(exp===null?'':(exp>0?'pos':(exp<0?'neg':'')))+'">'+(exp===null?'—':(exp>=0?'+':'−')+fnum(Math.abs(exp),2)+'R')+'</td>'+
+        '<td class="mono '+(pf>=1?'pos':(pf<1&&a.losses>0?'neg':''))+'">'+(pf===Infinity?'∞':fnum(pf,2))+'</td>'+
+      '</tr>';
+    }).join('');
+
+    // find the strongest & weakest markets with enough data (>=5 trades)
+    var ranked = fams.filter(function(f){ return agg[f].rCount>=5; })
+      .map(function(f){ return {f:f, exp:agg[f].rSum/agg[f].rCount}; })
+      .sort(function(x,y){ return y.exp-x.exp; });
+    if(ranked.length>=2){
+      var best=ranked[0], worst=ranked[ranked.length-1];
+      hint.innerHTML = 'Your strongest read is <b>'+best.f+'</b> ('+(best.exp>=0?'+':'−')+fnum(Math.abs(best.exp),2)+'R/trade) and weakest is <b>'+worst.f+'</b> ('+(worst.exp>=0?'+':'−')+fnum(Math.abs(worst.exp),2)+'R). Trade more of what works; practice the weak one on the Setup Trainer before risking size.';
+    } else {
+      hint.innerHTML = 'Log at least <b>5 trades per market</b> before comparing — fewer than that is noise, not a signal.';
+    }
+  }
+
+  function renderAll(){ renderDash(); renderMarkets(); renderTable(); }
+
+  // ---- live preview ----
+  function readForm(){
+    var mSel = document.getElementById('f-market');
+    return {
+      date: document.getElementById('f-date').value,
+      market: mSel.value,
+      dir: document.getElementById('f-dir').value,
+      qty: parseFloat(document.getElementById('f-qty').value),
+      entry: parseFloat(document.getElementById('f-entry').value),
+      stop: parseFloat(document.getElementById('f-stop').value),
+      exit: parseFloat(document.getElementById('f-exit').value),
+      conf: document.getElementById('f-conf').value,
+      setup: document.getElementById('f-setup').value.trim()
+    };
+  }
+  function updatePreview(){
+    var f = readForm();
+    var el = document.getElementById('preview');
+    if(isNaN(f.entry)||isNaN(f.exit)||isNaN(f.qty)){ el.innerHTML='Fill entry, stop &amp; exit to preview P&amp;L and R.'; return; }
+    var c = calc(f);
+    var pnlSpan = '<b class="'+(c.pnl>=0?'g':'r')+'">'+money(c.pnl,0)+'</b>';
+    var rSpan = c.r===null?'<b>—</b> <span style="opacity:.7">(add a stop for R)</span>'
+      : '<b class="'+(c.r>=0?'g':'r')+'">'+(c.r>=0?'+':'−')+fnum(Math.abs(c.r),2)+'R</b>';
+    el.innerHTML = 'This trade: P&amp;L '+pnlSpan+' &nbsp;·&nbsp; '+rSpan+(c.risk>0?' &nbsp;·&nbsp; risk '+money(c.risk,0):'');
+  }
+
+  // ---- add ----
+  function addTrade(){
+    var f = readForm();
+    if(isNaN(f.entry)||isNaN(f.exit)){ alert('Please enter at least an entry and an exit price.'); return; }
+    if(isNaN(f.qty)||f.qty<1){ f.qty = 1; }
+    if(!f.date){ f.date = '—'; }
+    f.id = nextId();
+    f.conf = (f.conf==='')? null : f.conf;
+    trades.push(f);
+    save(); renderAll();
+    // reset price fields for the next entry, keep date/market/dir
+    ['f-entry','f-stop','f-exit','f-setup','f-conf'].forEach(function(id){ document.getElementById(id).value=''; });
+    document.getElementById('f-entry').focus();
+    updatePreview();
+  }
+
+  // ---- CSV export ----
+  function exportCSV(){
+    if(!trades.length){ alert('No trades to export yet.'); return; }
+    var head = ['Date','Market','Direction','Contracts','Entry','Stop','Exit','Risk$','PnL$','R','Confluence','Setup/Notes'];
+    var lines = [head.join(',')];
+    trades.forEach(function(t){
+      var c = calc(t);
+      var row = [t.date, t.market, t.dir, t.qty, t.entry, t.stop, t.exit,
+        c.risk.toFixed(2), c.pnl.toFixed(2), c.r===null?'':c.r.toFixed(3),
+        (t.conf==null?'':t.conf), '"'+(t.setup||'').replace(/"/g,'""')+'"'];
+      lines.push(row.join(','));
+    });
+    var blob = new Blob([lines.join('\n')], {type:'text/csv'});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = 'trade-journal.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  // ---- sample data ----
+  function loadSample(){
+    if(trades.length && !confirm('This adds sample trades to your current log. Continue?')) return;
+    var s = [
+      {date:'2026-07-06',market:'MCL',dir:'long', qty:2, entry:74.80, stop:74.55, exit:75.40, conf:'4', setup:'0.618 pocket + prior-day low + hammer'},
+      {date:'2026-07-07',market:'MES',dir:'short',qty:2, entry:6012, stop:6020, exit:5994, conf:'3', setup:'ATH shooting star + lost VWAP'},
+      {date:'2026-07-08',market:'MCL',dir:'long', qty:2, entry:75.10, stop:74.90, exit:74.90, conf:'2', setup:'forced it, no confluence — stopped out'},
+      {date:'2026-07-09',market:'MBT',dir:'long', qty:3, entry:99500,stop:98800,exit:101200,conf:'4', setup:'support retest + golden pocket'},
+      {date:'2026-07-10',market:'MES',dir:'long', qty:2, entry:5988, stop:5982, exit:6003, conf:'4', setup:'VWAP reclaim + 9/21 stacked'},
+      {date:'2026-07-13',market:'MCL',dir:'short',qty:2, entry:75.60, stop:75.80, exit:75.85, conf:'3', setup:'resistance rejection — chopped out'}
+    ];
+    s.forEach(function(t){ t.id = nextId(); trades.push(t); });
+    save(); renderAll();
+  }
+
+  function clearAll(){
+    if(!trades.length) return;
+    if(confirm('Delete ALL '+trades.length+' trades? Export a CSV backup first if you want to keep them.')){
+      trades = []; save(); renderAll();
+    }
+  }
+
+  // ---- wire up ----
+  document.getElementById('add-btn').addEventListener('click', addTrade);
+  document.getElementById('export-btn').addEventListener('click', exportCSV);
+  document.getElementById('clear-btn').addEventListener('click', clearAll);
+  document.getElementById('sample-btn').addEventListener('click', loadSample);
+  document.getElementById('sample-btn-2').addEventListener('click', loadSample);
+  ['f-market','f-dir','f-qty','f-entry','f-stop','f-exit'].forEach(function(id){
+    document.getElementById(id).addEventListener('input', updatePreview);
+    document.getElementById(id).addEventListener('change', updatePreview);
+  });
+  document.getElementById('f-setup').addEventListener('keydown', function(e){ if(e.key==='Enter') addTrade(); });
+
+  load(); renderAll(); updatePreview();
+})();
+</script>

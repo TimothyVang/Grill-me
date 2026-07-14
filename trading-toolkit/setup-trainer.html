@@ -1,0 +1,441 @@
+<title>The Setup Trainer — Drill Your Read Across All Markets</title>
+<style>
+  :root {
+    --ground:#f6f3ec; --panel:#fffdf8; --panel-2:#efe9dc; --ink:#23222a; --ink-soft:#55525c;
+    --ink-faint:#837f88; --hair:#ddd6c6; --hair-strong:#c7bfab; --accent:#b07d24; --accent-bright:#c89544;
+    --teal:#2f7a78; --long:#3f8a5e; --short:#b34a44; --warn-bg:#fbeede; --warn-ink:#8a4a12; --amber:#b07d24;
+    --shadow:0 1px 2px rgba(30,25,15,.06),0 8px 30px rgba(30,25,15,.06);
+    --mono:ui-monospace,"SF Mono","SFMono-Regular",Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){ :root{
+    --ground:#0e1016; --panel:#161922; --panel-2:#1d212b; --ink:#e9e6df; --ink-soft:#a9a6a0;
+    --ink-faint:#726f6a; --hair:#242833; --hair-strong:#333844; --accent:#cf9f52; --accent-bright:#e2b46a;
+    --teal:#4fb0ad; --long:#57bd80; --short:#df7d78; --warn-bg:#2a1f12; --warn-ink:#e0a866; --amber:#cf9f52;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 12px 38px rgba(0,0,0,.4);
+  }}
+  :root[data-theme="light"]{ --ground:#f6f3ec;--panel:#fffdf8;--panel-2:#efe9dc;--ink:#23222a;--ink-soft:#55525c;--ink-faint:#837f88;--hair:#ddd6c6;--hair-strong:#c7bfab;--accent:#b07d24;--accent-bright:#c89544;--teal:#2f7a78;--long:#3f8a5e;--short:#b34a44;--warn-bg:#fbeede;--warn-ink:#8a4a12;--amber:#b07d24;--shadow:0 1px 2px rgba(30,25,15,.06),0 8px 30px rgba(30,25,15,.06);}
+  :root[data-theme="dark"]{ --ground:#0e1016;--panel:#161922;--panel-2:#1d212b;--ink:#e9e6df;--ink-soft:#a9a6a0;--ink-faint:#726f6a;--hair:#242833;--hair-strong:#333844;--accent:#cf9f52;--accent-bright:#e2b46a;--teal:#4fb0ad;--long:#57bd80;--short:#df7d78;--warn-bg:#2a1f12;--warn-ink:#e0a866;--amber:#cf9f52;--shadow:0 1px 2px rgba(0,0,0,.3),0 12px 38px rgba(0,0,0,.4);}
+
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:960px;margin:0 auto;padding:0 20px;}
+  .mono{font-family:var(--mono);font-variant-numeric:tabular-nums;}
+
+  h1{font-size:clamp(1.9rem,5vw,2.9rem);letter-spacing:-.03em;margin:0;line-height:1.14;}
+  p{margin:0 0 1em;}
+
+  header.hero{border-bottom:1px solid var(--hair);background:radial-gradient(130% 100% at 88% -25%,color-mix(in srgb,var(--accent) 16%,transparent),transparent 60%),var(--ground);}
+  .hero-inner{padding:44px 0 30px;}
+  .kicker{font-family:var(--mono);font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:14px;display:flex;align-items:center;gap:11px;}
+  .kicker .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 22%,transparent);}
+  .hero p.lede{font-size:1.1rem;color:var(--ink-soft);max-width:62ch;margin:.5em 0 0;}
+
+  section{padding:26px 0;}
+  .sec-label{font-family:var(--mono);font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin-bottom:12px;}
+
+  /* scorecard */
+  .tiles{display:grid;gap:12px;grid-template-columns:repeat(4,1fr);}
+  @media (max-width:760px){ .tiles{grid-template-columns:repeat(2,1fr);} }
+  .tile{background:var(--panel);border:1px solid var(--hair);border-radius:14px;padding:15px 17px;box-shadow:var(--shadow);}
+  .tile .k{font-size:.68rem;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-faint);}
+  .tile .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:1.65rem;font-weight:680;margin-top:4px;letter-spacing:-.02em;}
+  .tile .v small{font-size:.7rem;font-weight:500;color:var(--ink-soft);}
+  .tile .v.pos{color:var(--long);} .tile .v.neg{color:var(--short);}
+  .tile .sub{font-size:.74rem;color:var(--ink-faint);margin-top:2px;}
+
+  /* market controls */
+  .ctl-row{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:2px;}
+  .markets{display:inline-flex;background:var(--panel-2);border:1px solid var(--hair);border-radius:12px;padding:4px;gap:4px;flex-wrap:wrap;}
+  .mbtn{font-family:var(--sans);font-size:.9rem;font-weight:640;padding:8px 15px;border-radius:9px;border:0;background:transparent;color:var(--ink-soft);cursor:pointer;}
+  .mbtn[aria-pressed="true"]{background:var(--accent);color:#fff;box-shadow:var(--shadow);}
+  .mbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+
+  /* theater */
+  .theater{background:var(--panel);border:1px solid var(--hair-strong);border-radius:18px;box-shadow:var(--shadow);overflow:hidden;margin-top:12px;}
+  .theater-top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 18px;border-bottom:1px solid var(--hair);flex-wrap:wrap;}
+  .theater-top .sym{font-family:var(--mono);font-weight:680;font-size:1.02rem;}
+  .theater-top .sym .side{font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:999px;margin-left:8px;color:var(--long);background:color-mix(in srgb,var(--long) 16%,transparent);letter-spacing:.05em;}
+  .theater-top .qn{font-family:var(--mono);font-size:.82rem;color:var(--ink-faint);}
+  .canvas-shell{position:relative;background:linear-gradient(180deg,color-mix(in srgb,var(--panel-2) 40%,var(--panel)),var(--panel));}
+  canvas{display:block;width:100%;height:auto;}
+  .prompt{position:absolute;left:0;right:0;top:0;padding:12px 18px;font-weight:640;font-size:.95rem;pointer-events:none;text-shadow:0 1px 8px var(--panel);}
+
+  .controls{display:flex;align-items:center;gap:10px;padding:14px 18px;border-top:1px solid var(--hair);flex-wrap:wrap;}
+  .btn{font-family:var(--sans);font-size:.95rem;font-weight:660;padding:11px 24px;border-radius:11px;border:1px solid transparent;cursor:pointer;}
+  .btn.trade{background:var(--long);color:#fff;} .btn.trade:hover{filter:brightness(1.06);}
+  .btn.pass{background:var(--panel-2);color:var(--ink);border-color:var(--hair-strong);} .btn.pass:hover{border-color:var(--short);color:var(--short);}
+  .btn.primary{background:var(--accent);color:#fff;} .btn.primary:hover{background:var(--accent-bright);}
+  .btn.ghost{background:transparent;border-color:var(--hair-strong);color:var(--ink-soft);} .btn.ghost:hover{border-color:var(--accent);color:var(--accent);}
+  .btn:disabled{opacity:.4;cursor:default;}
+  .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  .controls .right{margin-left:auto;display:flex;gap:8px;}
+
+  /* feedback */
+  .feedback{padding:0 18px;max-height:0;overflow:hidden;transition:max-height .3s;border-top:0 solid var(--hair);}
+  .feedback.show{max-height:400px;padding:16px 18px;border-top:1px solid var(--hair);}
+  .fb-head{font-weight:700;font-size:1.02rem;display:flex;align-items:center;gap:9px;}
+  .fb-head.good{color:var(--long);} .fb-head.bad{color:var(--short);} .fb-head.meh{color:var(--amber);}
+  .fb-body{font-size:.92rem;color:var(--ink-soft);margin-top:6px;}
+  .factors{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px;}
+  .factor{font-family:var(--mono);font-size:.76rem;padding:4px 10px;border-radius:999px;border:1px solid var(--hair);background:var(--panel-2);}
+  .factor.yes{color:var(--long);border-color:color-mix(in srgb,var(--long) 40%,var(--hair));}
+  .factor.no{color:var(--short);border-color:color-mix(in srgb,var(--short) 40%,var(--hair));}
+
+  /* per-market table */
+  .pm{margin-top:14px;overflow-x:auto;border:1px solid var(--hair);border-radius:12px;}
+  table.pm-t{width:100%;border-collapse:collapse;font-size:.85rem;background:var(--panel);min-width:420px;}
+  table.pm-t th,table.pm-t td{padding:9px 14px;text-align:right;border-bottom:1px solid var(--hair);}
+  table.pm-t th{font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint);font-weight:640;background:var(--panel-2);}
+  table.pm-t th:first-child,table.pm-t td:first-child{text-align:left;}
+  table.pm-t td.mono{font-family:var(--mono);font-variant-numeric:tabular-nums;}
+  table.pm-t tr:last-child td{border-bottom:0;}
+
+  .note{border-radius:12px;padding:15px 18px;margin:16px 0 0;font-size:.9rem;border:1px solid var(--hair-strong);background:var(--panel);border-left:3px solid var(--teal);color:var(--ink-soft);}
+  .note b{color:var(--ink);}
+  .callout-label{font-family:var(--mono);font-size:.7rem;letter-spacing:.13em;text-transform:uppercase;display:block;margin-bottom:5px;color:var(--teal);}
+
+  footer{padding:30px 0 60px;color:var(--ink-faint);font-size:.82rem;}
+  .disc{border:1px solid var(--hair);border-radius:12px;padding:15px 18px;background:var(--panel);}
+  @media (prefers-reduced-motion:reduce){ *{transition:none!important;} }
+</style>
+
+<header class="hero">
+  <div class="wrap hero-inner">
+    <div class="kicker"><span class="dot"></span> Setup trainer · all markets · records your read</div>
+    <h1>Drill the read.</h1>
+    <p class="lede">Get dealt a fresh setup on oil, the S&amp;P, or Bitcoin. Decide <b>Take the trade</b> or <b>Pass</b> — then see the outcome and whether your <em>decision</em> was right. Do 20 reps a day and you'll start seeing the setup live.</p>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section>
+    <div class="sec-label">Your scorecard</div>
+    <div class="tiles">
+      <div class="tile"><div class="k">Setups seen</div><div class="v" id="s-seen">0</div><div class="sub">reps completed</div></div>
+      <div class="tile"><div class="k">Decision accuracy</div><div class="v" id="s-acc">—</div><div class="sub">right calls / total</div></div>
+      <div class="tile"><div class="k">Net R (trades taken)</div><div class="v" id="s-r">—</div><div class="sub" id="s-wl">0W / 0L</div></div>
+      <div class="tile"><div class="k">Best market</div><div class="v" id="s-best" style="font-size:1.2rem">—</div><div class="sub">highest accuracy</div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="ctl-row">
+      <div class="markets" role="group" aria-label="Which markets to drill">
+        <button class="mbtn" data-mkt="all" aria-pressed="true">🎲 All markets</button>
+        <button class="mbtn" data-mkt="oil" aria-pressed="false">🛢️ Oil</button>
+        <button class="mbtn" data-mkt="spx" aria-pressed="false">📊 S&amp;P</button>
+        <button class="mbtn" data-mkt="btc" aria-pressed="false">₿ Bitcoin</button>
+      </div>
+    </div>
+
+    <div class="theater">
+      <div class="theater-top">
+        <div class="sym" id="sym">—</div>
+        <div class="qn" id="qn">Press “New setup” to begin</div>
+      </div>
+      <div class="canvas-shell" id="shell">
+        <canvas id="cv" width="900" height="400" aria-label="Practice candlestick setup"></canvas>
+        <div class="prompt" id="prompt"></div>
+      </div>
+      <div class="controls">
+        <button class="btn trade" id="btn-trade" disabled>▲ Take the trade</button>
+        <button class="btn pass" id="btn-pass" disabled>Pass</button>
+        <div class="right">
+          <button class="btn primary" id="btn-new">＋ New setup</button>
+        </div>
+      </div>
+      <div class="feedback" id="feedback">
+        <div class="fb-head" id="fb-head"></div>
+        <div class="fb-body" id="fb-body"></div>
+        <div class="factors" id="fb-factors"></div>
+      </div>
+    </div>
+
+    <div class="pm">
+      <table class="pm-t">
+        <thead><tr><th>Market</th><th>Seen</th><th>Right calls</th><th>Accuracy</th></tr></thead>
+        <tbody id="pm-body">
+          <tr><td colspan="4" style="text-align:center;color:var(--ink-faint);padding:16px;">No reps yet — deal your first setup.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note">
+      <span class="callout-label">How you're scored</span>
+      You're graded on the <b>decision, not the outcome</b> — because that's how real trading works. Taking a valid setup is a <b>right call even when it loses</b> (good setups still lose ~40% of the time). Passing a trap is a right call even though you "missed" nothing. Read the candle at the level: a <b>rejection/hammer</b> = trigger; a weak candle closing at its lows = no trade. <b>Reset</b> clears your record; your stats save in this browser.
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap"><div class="disc">
+    <p style="margin:0;">Education, not financial advice. These are generated practice setups to train pattern recognition — they don't predict real markets. Your real edge only shows in a live journal over many trades. Companion to <em>The Confluence Playbook</em>, <em>Trade Replay</em>, and <em>Trade Journal</em>.</p>
+  </div></div>
+</footer>
+
+<script>
+(function(){
+  var cv=document.getElementById('cv'), ctx=cv.getContext('2d'), shell=document.getElementById('shell');
+  var reduce=window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var KEY='setup_trainer_v1';
+
+  var MKT={
+    oil:{key:'oil',name:'Oil · MCL', low:74.00, high:76.50, pv:100, dp:2},
+    spx:{key:'spx',name:'S&P · MES', low:5975, high:6025, pv:5, dp:2},
+    btc:{key:'btc',name:'Bitcoin · MBT', low:98000, high:103000, pv:0.1, dp:0}
+  };
+  var MK_LIST=['oil','spx','btc'];
+  var pick='all';
+
+  // fixed trade geometry (normalized)
+  var entryN=.50, stopN=.44, targetN=.80, pocketTopN=.515, pocketBotN=.465;
+  var ENTRY_CANDLE=14;
+  var Rwin=(targetN-entryN)/(entryN-stopN); // 5
+
+  // ---- persistent stats ----
+  var stats;
+  function loadStats(){
+    try{ stats=JSON.parse(localStorage.getItem(KEY)); }catch(e){ stats=null; }
+    if(!stats||typeof stats!=='object'){ stats={seen:0,correct:0,taken:0,wins:0,losses:0,rSum:0,pm:{}}; }
+    ['oil','spx','btc'].forEach(function(k){ if(!stats.pm[k]) stats.pm[k]={seen:0,correct:0}; });
+  }
+  function saveStats(){ try{ localStorage.setItem(KEY, JSON.stringify(stats)); }catch(e){} }
+
+  // ---- scenario generation (Math.random OK in browser) ----
+  function jit(x){ return x + (Math.random()-0.5)*0.012; }
+  function rnd(a,b){ return a + Math.random()*(b-a); }
+
+  var scen=null; // {mkt, type:'valid'|'trap', win:bool, candles:[], decideIdx}
+
+  function buildScenario(){
+    var mkt = (pick==='all') ? MK_LIST[Math.floor(Math.random()*MK_LIST.length)] : pick;
+    // type: ~52% valid, 48% trap
+    var isValid = Math.random() < 0.52;
+    // rally 0..8 (uptrend, jittered)
+    var C=[];
+    var base=[[.30,.34,.29,.33],[.33,.38,.32,.37],[.37,.41,.35,.40],[.40,.46,.39,.45],
+      [.45,.51,.44,.49],[.49,.57,.48,.55],[.55,.63,.54,.61],[.61,.71,.60,.68],[.68,.82,.67,.80],
+      [.80,.81,.72,.73],[.73,.75,.66,.67],[.67,.69,.60,.61],[.61,.63,.54,.55],[.55,.57,.50,.515]];
+    base.forEach(function(k){ C.push([k[0], jit(k[1]), jit(k[2]), k[3]]); });
+
+    // decision candle (index 14) — the read
+    if(isValid){
+      // hammer: long lower wick into pocket, closes back up
+      C.push([.505, .53, rnd(.455,.47), .522]);
+    } else {
+      var flavor=Math.floor(Math.random()*2);
+      if(flavor===0) C.push([.515, .52, .47, .476]);           // red, closes at lows, no rejection
+      else           C.push([.50, rnd(.55,.58), .485, .49]);   // upper-wick rejection (bearish)
+    }
+
+    // outcome
+    var win;
+    if(isValid){ win = Math.random() < 0.68; }   // even valid setups lose sometimes
+    else { win = false; }                        // traps, if taken, lose
+
+    // tail
+    if(win){
+      C.push([.522,.585,.515,.575]); C.push([.575,.635,.565,.625]); C.push([.625,.68,.615,.67]);
+      C.push([.67,.73,.66,.72]); C.push([.72,.79,.71,.78]); C.push([.78,.83,.77,.805]); C.push([.805,.85,.795,.84]);
+    } else {
+      C.push([.49,.505,.45,.455]); C.push([.455,.47,.42,.43]); C.push([.43,.44,.395,.405]); C.push([.405,.415,.37,.38]);
+    }
+    return { mkt:mkt, type:isValid?'valid':'trap', win:win, candles:C, decideIdx:ENTRY_CANDLE, revealed:ENTRY_CANDLE, decided:false, action:null };
+  }
+
+  // ---- drawing ----
+  var DPR=Math.max(1,Math.min(3,window.devicePixelRatio||1));
+  var padL=14,padR=70,padT=40,padB=24,DMIN=.27,DMAX=.90,W,H;
+  function cssVar(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+  function resize(){
+    var cssW=shell.clientWidth||900, cssH=Math.max(280,Math.min(420,Math.round(cssW*0.46)));
+    W=cssW;H=cssH; cv.style.width=cssW+'px'; cv.style.height=cssH+'px';
+    cv.width=Math.round(cssW*DPR); cv.height=Math.round(cssH*DPR); ctx.setTransform(DPR,0,0,DPR,0,0);
+    if(scen) draw();
+  }
+  function xFor(i,N){ var iw=W-padL-padR; return padL+(i+0.5)*(iw/N); }
+  function yFor(n){ var ih=H-padT-padB; return padT+(1-(n-DMIN)/(DMAX-DMIN))*ih; }
+  function sma(C,i,p){ var s=0,c=0; for(var k=Math.max(0,i-p+1);k<=i;k++){ s+=C[k][3]; c++; } return s/c; }
+
+  function draw(){
+    if(!scen){ ctx.clearRect(0,0,W,H); return; }
+    var C=scen.candles, N=C.length, li=scen.revealed;
+    var cLong=cssVar('--long'),cShort=cssVar('--short'),cHair=cssVar('--hair'),cHairS=cssVar('--hair-strong'),
+        cAcc=cssVar('--accent'),cInk=cssVar('--ink-faint'),cTeal=cssVar('--teal');
+    ctx.clearRect(0,0,W,H); ctx.font='11px '+cssVar('--mono'); ctx.textBaseline='middle';
+    ctx.strokeStyle=cHair; ctx.lineWidth=1;
+    [.30,.45,.60,.75,.90].forEach(function(n){ var y=yFor(n); ctx.globalAlpha=.5; ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(W-padR,y); ctx.stroke(); ctx.globalAlpha=1; });
+
+    var iw=W-padL-padR;
+    // pocket band
+    var yT=yFor(pocketTopN),yB=yFor(pocketBotN);
+    ctx.fillStyle=cAcc; ctx.globalAlpha=.13; ctx.fillRect(padL,yT,iw,yB-yT); ctx.globalAlpha=1;
+    ctx.strokeStyle=cAcc; ctx.globalAlpha=.45; ctx.setLineDash([4,3]);
+    ctx.beginPath(); ctx.moveTo(padL,yT); ctx.lineTo(W-padR,yT); ctx.moveTo(padL,yB); ctx.lineTo(W-padR,yB); ctx.stroke();
+    ctx.setLineDash([]); ctx.globalAlpha=1;
+    ctx.fillStyle=cAcc; ctx.textAlign='left'; ctx.globalAlpha=.8; ctx.fillText('0.618 pocket', padL+4, yFor(pocketTopN)-8); ctx.globalAlpha=1;
+
+    // trade lines after decision if traded
+    if(scen.decided && scen.action==='trade'){
+      var ex=xFor(ENTRY_CANDLE,N), yE=yFor(entryN),yTg=yFor(targetN),yS=yFor(stopN);
+      ctx.fillStyle=cLong; ctx.globalAlpha=.09; ctx.fillRect(ex,yTg,(W-padR)-ex,yE-yTg); ctx.globalAlpha=1;
+      ctx.fillStyle=cShort; ctx.globalAlpha=.11; ctx.fillRect(ex,yE,(W-padR)-ex,yS-yE); ctx.globalAlpha=1;
+      function hl(n,col,lab,dash){ var y=yFor(n); ctx.strokeStyle=col; ctx.lineWidth=1.5; ctx.setLineDash(dash||[]); ctx.beginPath(); ctx.moveTo(ex,y); ctx.lineTo(W-padR,y); ctx.stroke(); ctx.setLineDash([]); ctx.fillStyle=col; ctx.textAlign='left'; ctx.fillText(lab, W-padR+4, y); }
+      hl(targetN,cLong,'T',[5,3]); hl(entryN,cAcc,'E',[]); hl(stopN,cShort,'S',[5,3]);
+    }
+
+    // trend line (SMA) up to revealed
+    ctx.strokeStyle=cTeal; ctx.lineWidth=1.6; ctx.globalAlpha=.7; ctx.beginPath();
+    for(var t=0;t<=li && t<N;t++){ var x=xFor(t,N), y=yFor(sma(C,t,5)); if(t===0)ctx.moveTo(x,y); else ctx.lineTo(x,y); }
+    ctx.stroke(); ctx.globalAlpha=1;
+
+    // candles
+    var cw=Math.max(3,(iw/N)*0.56);
+    for(var i=0;i<=li && i<N;i++){
+      var o=C[i][0],h=C[i][1],l=C[i][2],c=C[i][3], up=c>=o, col=up?cLong:cShort, x=xFor(i,N);
+      ctx.strokeStyle=col; ctx.lineWidth=1.3; ctx.beginPath(); ctx.moveTo(x,yFor(h)); ctx.lineTo(x,yFor(l)); ctx.stroke();
+      var yo=yFor(o),yc=yFor(c),top=Math.min(yo,yc),hgt=Math.max(2,Math.abs(yc-yo));
+      ctx.fillStyle=col; ctx.fillRect(x-cw/2,top,cw,hgt);
+      if(i===ENTRY_CANDLE){ ctx.strokeStyle=cAcc; ctx.lineWidth=2; ctx.strokeRect(x-cw/2-2,yFor(h)-2,cw+4,yFor(l)-yFor(h)+4); }
+    }
+  }
+
+  // ---- animate reveal of tail ----
+  var timer=null;
+  function revealTail(cb){
+    if(reduce){ scen.revealed=scen.candles.length-1; draw(); cb&&cb(); return; }
+    if(timer) clearInterval(timer);
+    timer=setInterval(function(){
+      scen.revealed++;
+      if(scen.revealed>=scen.candles.length-1){ scen.revealed=scen.candles.length-1; clearInterval(timer); timer=null; draw(); cb&&cb(); return; }
+      draw();
+    }, 150);
+  }
+
+  // ---- flow ----
+  function newSetup(){
+    if(timer){ clearInterval(timer); timer=null; }
+    scen=buildScenario();
+    var m=MKT[scen.mkt];
+    document.getElementById('sym').innerHTML = m.name + ' <span class="side">LONG</span>';
+    document.getElementById('qn').textContent = 'Setup #'+(stats.seen+1);
+    document.getElementById('prompt').textContent = 'Price pulled into the 0.618 pocket. Read the candle at the level — trade or pass?';
+    document.getElementById('feedback').classList.remove('show');
+    document.getElementById('btn-trade').disabled=false;
+    document.getElementById('btn-pass').disabled=false;
+    scen.revealed=ENTRY_CANDLE; draw();
+  }
+
+  function decide(action){
+    if(!scen || scen.decided) return;
+    scen.decided=true; scen.action=action;
+    document.getElementById('btn-trade').disabled=true;
+    document.getElementById('btn-pass').disabled=true;
+    document.getElementById('prompt').textContent='';
+    revealTail(function(){ scoreAndShow(action); });
+    draw(); // draw trade lines immediately if traded
+  }
+
+  function scoreAndShow(action){
+    var valid = (scen.type==='valid');
+    var right = (valid && action==='trade') || (!valid && action==='pass');
+    // update stats
+    stats.seen++;
+    if(right) stats.correct++;
+    stats.pm[scen.mkt].seen++; if(right) stats.pm[scen.mkt].correct++;
+    var rDelta=0, tookLabel='';
+    if(action==='trade'){
+      stats.taken++;
+      if(scen.win){ stats.wins++; rDelta=Rwin; } else { stats.losses++; rDelta=-1; }
+      stats.rSum += rDelta;
+      var m=MKT[scen.mkt]; var dollars=(scen.win?(80-50):(44-50))/100*(m.high-m.low)*m.pv; // R->price->$
+    }
+    saveStats(); renderStats();
+
+    // feedback text
+    var head=document.getElementById('fb-head'), body=document.getElementById('fb-body'), fac=document.getElementById('fb-factors');
+    var hcls='good', icon='✓', title='', msg='';
+    if(valid && action==='trade'){
+      if(scen.win){ title='Right call — and it ran.'; msg='Valid setup: hammer rejection in the pocket, uptrend intact. It hit target. +'+Rwin.toFixed(0)+'R.'; }
+      else { title='Right call — it lost anyway.'; msg='This WAS a valid setup — you read it correctly. It still stopped out, which ~40% of good setups do. Judge the decision, not the result. −1R.'; }
+      hcls='good'; icon='✓';
+    } else if(!valid && action==='pass'){
+      title='Good discipline — no trade.'; msg='The candle at the level showed no buyer rejection (it closed weak). No trigger = no trade. You dodged a likely −1R.'; hcls='good'; icon='✓';
+    } else if(valid && action==='pass'){
+      title='Missed a takeable setup.'; msg='That was a valid trigger — hammer in the pocket, trend up. Passing isn’t a loss, but this was a trade worth taking'+(scen.win?' (it went on to hit target).':' (though it would have stopped out this time).'); hcls='meh'; icon='△';
+    } else { // trap + trade
+      title='Trap — you took a loser.'; msg='The decision candle had no rejection — it closed at its lows. Price broke down and hit the stop. −1R. Wait for the hammer next time.'; hcls='bad'; icon='✕';
+    }
+    head.className='fb-head '+hcls; head.textContent=icon+'  '+title;
+    body.textContent=msg;
+
+    // factors
+    var rej = valid; // in this drill validity == rejection candle present + trend
+    fac.innerHTML =
+      '<span class="factor yes">Trend up ✓</span>'+
+      '<span class="factor yes">At 0.618 pocket ✓</span>'+
+      '<span class="factor '+(rej?'yes':'no')+'">Rejection candle '+(rej?'✓':'✗')+'</span>'+
+      (action==='trade'? '<span class="factor '+(scen.win?'yes':'no')+'">Result '+(scen.win?'+'+Rwin.toFixed(0)+'R':'−1R')+'</span>' : '<span class="factor">Passed</span>');
+    document.getElementById('feedback').classList.add('show');
+  }
+
+  function renderStats(){
+    document.getElementById('s-seen').textContent=stats.seen;
+    var acc = stats.seen? Math.round(stats.correct/stats.seen*100):null;
+    var accEl=document.getElementById('s-acc');
+    accEl.innerHTML = acc===null?'—':acc+'<small>%</small>';
+    accEl.className='v'+(acc===null?'':(acc>=60?' pos':(acc<45?' neg':'')));
+    var rEl=document.getElementById('s-r');
+    rEl.innerHTML = stats.taken? (stats.rSum>=0?'+':'−')+Math.abs(stats.rSum).toFixed(0)+'<small>R</small>' : '—';
+    rEl.className='v'+(!stats.taken?'':(stats.rSum>0?' pos':(stats.rSum<0?' neg':'')));
+    document.getElementById('s-wl').textContent=stats.wins+'W / '+stats.losses+'L';
+
+    // best market
+    var best=null;
+    ['oil','spx','btc'].forEach(function(k){ var p=stats.pm[k]; if(p.seen>=3){ var a=p.correct/p.seen; if(!best||a>best.a) best={k:k,a:a}; } });
+    document.getElementById('s-best').textContent = best? (MKT[best.k].name.split(' ')[0]+' '+Math.round(best.a*100)+'%') : '—';
+
+    // per-market table
+    var rows=['oil','spx','btc'].filter(function(k){ return stats.pm[k].seen>0; });
+    var tb=document.getElementById('pm-body');
+    if(!rows.length){ tb.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--ink-faint);padding:16px;">No reps yet — deal your first setup.</td></tr>'; return; }
+    tb.innerHTML=rows.map(function(k){ var p=stats.pm[k]; var a=Math.round(p.correct/p.seen*100);
+      return '<tr><td>'+MKT[k].name+'</td><td class="mono">'+p.seen+'</td><td class="mono">'+p.correct+'</td><td class="mono">'+a+'%</td></tr>';
+    }).join('');
+  }
+
+  function resetAll(){
+    if(!confirm('Reset your entire practice record?')) return;
+    stats={seen:0,correct:0,taken:0,wins:0,losses:0,rSum:0,pm:{oil:{seen:0,correct:0},spx:{seen:0,correct:0},btc:{seen:0,correct:0}}};
+    saveStats(); renderStats();
+  }
+
+  // ---- wire ----
+  document.getElementById('btn-trade').addEventListener('click',function(){ decide('trade'); });
+  document.getElementById('btn-pass').addEventListener('click',function(){ decide('pass'); });
+  document.getElementById('btn-new').addEventListener('click', newSetup);
+  Array.prototype.forEach.call(document.querySelectorAll('.mbtn[data-mkt]'),function(b){
+    b.addEventListener('click',function(){
+      Array.prototype.forEach.call(document.querySelectorAll('.mbtn[data-mkt]'),function(x){ x.setAttribute('aria-pressed','false'); });
+      b.setAttribute('aria-pressed','true'); pick=b.getAttribute('data-mkt');
+    });
+  });
+  // reset button (added into controls)
+  var resetBtn=document.createElement('button'); resetBtn.className='btn ghost'; resetBtn.textContent='Reset';
+  resetBtn.addEventListener('click',resetAll);
+  document.querySelector('.controls .right').appendChild(resetBtn);
+
+  window.addEventListener('resize', resize);
+  document.addEventListener('keydown',function(e){
+    if(e.key==='t'||e.key==='T'){ if(!document.getElementById('btn-trade').disabled) decide('trade'); }
+    else if(e.key==='p'||e.key==='P'){ if(!document.getElementById('btn-pass').disabled) decide('pass'); }
+    else if(e.key==='n'||e.key==='N'){ newSetup(); }
+  });
+
+  loadStats(); resize(); renderStats();
+})();
+</script>
