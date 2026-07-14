@@ -22,6 +22,25 @@ Open any of them directly in a browser; there are no dependencies or build step.
 The trainer and journal persist data in the browser's `localStorage`, so use the
 journal's **Export CSV** for backups.
 
+## End-to-end demos
+
+The same setup — uptrend (EMA 9/21 + VWAP), pullback into the 0.618 golden
+pocket, a hammer rejection at the level, then entry with a defined stop and
+target — playing out to both outcomes. Indicators, the pocket highlight, the
+hammer glow, the entry/stop/target draw-in, and an RSI panel are all shown.
+
+**Winner (+5R):**
+
+![Winning trade end-to-end](media/trade-win.gif)
+
+**Stopped out (−1R):**
+
+![Losing trade end-to-end](media/trade-loss.gif)
+
+The two look identical at the entry — you can't tell them apart in advance.
+That's the point: the edge is a small, pre-planned stop and letting winners run,
+not prediction.
+
 ## How they fit together
 
 1. **Playbook** — learn the method and how to size a trade.
