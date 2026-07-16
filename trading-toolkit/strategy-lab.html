@@ -1,0 +1,485 @@
+<title>Strategy Lab — Programmable Rule Backtester</title>
+<style>
+  :root{
+    --ground:#f6f3ec;--panel:#fffdf8;--panel-2:#efe9dc;--ink:#23222a;--ink-soft:#55525c;--ink-faint:#837f88;
+    --hair:#ddd6c6;--hair-strong:#c7bfab;--accent:#b07d24;--accent-bright:#c89544;--teal:#2f7a78;
+    --long:#3f8a5e;--short:#b34a44;--shadow:0 1px 2px rgba(30,25,15,.06),0 8px 30px rgba(30,25,15,.06);
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;--sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){:root{
+    --ground:#0e1016;--panel:#161922;--panel-2:#1d212b;--ink:#e9e6df;--ink-soft:#a9a6a0;--ink-faint:#726f6a;
+    --hair:#242833;--hair-strong:#333844;--accent:#cf9f52;--accent-bright:#e2b46a;--teal:#4fb0ad;
+    --long:#57bd80;--short:#df7d78;--shadow:0 1px 2px rgba(0,0,0,.3),0 12px 38px rgba(0,0,0,.4);
+  }}
+  :root[data-theme="light"]{--ground:#f6f3ec;--panel:#fffdf8;--panel-2:#efe9dc;--ink:#23222a;--ink-soft:#55525c;--ink-faint:#837f88;--hair:#ddd6c6;--hair-strong:#c7bfab;--accent:#b07d24;--accent-bright:#c89544;--teal:#2f7a78;--long:#3f8a5e;--short:#b34a44;--shadow:0 1px 2px rgba(30,25,15,.06),0 8px 30px rgba(30,25,15,.06);}
+  :root[data-theme="dark"]{--ground:#0e1016;--panel:#161922;--panel-2:#1d212b;--ink:#e9e6df;--ink-soft:#a9a6a0;--ink-faint:#726f6a;--hair:#242833;--hair-strong:#333844;--accent:#cf9f52;--accent-bright:#e2b46a;--teal:#4fb0ad;--long:#57bd80;--short:#df7d78;--shadow:0 1px 2px rgba(0,0,0,.3),0 12px 38px rgba(0,0,0,.4);}
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 20px;}
+  .mono{font-family:var(--mono);font-variant-numeric:tabular-nums;}
+  h1{font-size:clamp(1.8rem,4.5vw,2.7rem);letter-spacing:-.03em;margin:0;line-height:1.14;}
+  h2{font-size:1.15rem;margin:0 0 2px;letter-spacing:-.01em;}
+  p{margin:0 0 .9em;}
+
+  header.hero{border-bottom:1px solid var(--hair);background:radial-gradient(130% 100% at 88% -25%,color-mix(in srgb,var(--accent) 15%,transparent),transparent 60%),var(--ground);}
+  .hero-inner{padding:40px 0 28px;}
+  .kicker{font-family:var(--mono);font-size:.71rem;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:13px;display:flex;align-items:center;gap:10px;}
+  .kicker .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 22%,transparent);}
+  .hero p.lede{font-size:1.08rem;color:var(--ink-soft);max-width:64ch;margin:.4em 0 0;}
+
+  .grid{display:grid;gap:16px;grid-template-columns:340px 1fr;align-items:start;margin:26px 0;}
+  @media (max-width:860px){.grid{grid-template-columns:1fr;}}
+
+  .card{background:var(--panel);border:1px solid var(--hair);border-radius:14px;padding:16px 18px;box-shadow:var(--shadow);}
+  .card + .card{margin-top:14px;}
+  .card h2 .sub{font-weight:400;font-size:.75rem;color:var(--ink-faint);margin-left:6px;}
+  .seclab{font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 10px;}
+
+  .row{display:flex;align-items:center;gap:8px;margin:8px 0;flex-wrap:wrap;}
+  .row label.t{flex:1;font-size:.86rem;color:var(--ink);display:flex;align-items:center;gap:8px;}
+  input[type=number],input[type=text],select{font-family:var(--mono);font-size:.85rem;padding:6px 8px;border-radius:8px;border:1px solid var(--hair-strong);background:var(--ground);color:var(--ink);width:74px;font-variant-numeric:tabular-nums;}
+  select{width:auto;}
+  input[type=text]{width:100%;font-family:var(--sans);}
+  input:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent);}
+  input[type=checkbox]{width:17px;height:17px;accent-color:var(--accent);}
+  textarea{width:100%;font-family:var(--mono);font-size:.78rem;border:1px solid var(--hair-strong);border-radius:8px;background:var(--ground);color:var(--ink);padding:9px;resize:vertical;line-height:1.45;}
+
+  .seg{display:inline-flex;background:var(--panel-2);border:1px solid var(--hair);border-radius:10px;padding:3px;gap:3px;flex-wrap:wrap;}
+  .seg button{font-family:var(--sans);font-size:.82rem;font-weight:620;padding:6px 12px;border-radius:7px;border:0;background:transparent;color:var(--ink-soft);cursor:pointer;}
+  .seg button[aria-pressed=true]{background:var(--accent);color:#fff;}
+  .seg.dir button[data-v=long][aria-pressed=true]{background:var(--long);}
+  .seg.dir button[data-v=short][aria-pressed=true]{background:var(--short);}
+
+  .btn{font-family:var(--sans);font-size:.92rem;font-weight:660;padding:11px 22px;border-radius:11px;border:1px solid transparent;cursor:pointer;}
+  .btn.primary{background:var(--accent);color:#fff;width:100%;} .btn.primary:hover{background:var(--accent-bright);}
+  .btn.ghost{background:transparent;border-color:var(--hair-strong);color:var(--ink-soft);font-size:.82rem;padding:7px 12px;} .btn.ghost:hover{border-color:var(--accent);color:var(--accent);}
+  .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+
+  .cond{border:1px solid var(--hair);border-radius:10px;padding:10px 12px;margin:8px 0;background:var(--panel-2);}
+  .cond.off{opacity:.55;}
+  .cond .head{display:flex;align-items:center;gap:8px;font-weight:620;font-size:.88rem;}
+  .cond .body{margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:.82rem;color:var(--ink-soft);}
+
+  /* results */
+  .tiles{display:grid;gap:10px;grid-template-columns:repeat(3,1fr);}
+  @media (max-width:560px){.tiles{grid-template-columns:repeat(2,1fr);}}
+  .tile{background:var(--panel-2);border-radius:11px;padding:12px 13px;}
+  .tile .k{font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint);}
+  .tile .v{font-family:var(--mono);font-size:1.4rem;font-weight:680;margin-top:3px;font-variant-numeric:tabular-nums;letter-spacing:-.02em;}
+  .tile .v.pos{color:var(--long);} .tile .v.neg{color:var(--short);}
+  .verdict{margin-top:12px;border-radius:10px;padding:12px 14px;font-size:.9rem;border:1px solid var(--hair-strong);}
+  .verdict.good{background:color-mix(in srgb,var(--long) 12%,var(--panel));border-left:3px solid var(--long);}
+  .verdict.bad{background:color-mix(in srgb,var(--short) 12%,var(--panel));border-left:3px solid var(--short);}
+  .verdict.meh{background:var(--panel-2);border-left:3px solid var(--accent);}
+  .verdict b{color:var(--ink);}
+
+  canvas{display:block;width:100%;height:auto;border-radius:10px;}
+  .chart-wrap{background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:12px;margin-top:14px;box-shadow:var(--shadow);}
+  .chart-wrap .cl{font-size:.75rem;color:var(--ink-faint);margin:2px 2px 8px;display:flex;justify-content:space-between;}
+
+  .tbl-shell{overflow-x:auto;border:1px solid var(--hair);border-radius:10px;margin-top:12px;}
+  table{width:100%;border-collapse:collapse;font-size:.8rem;background:var(--panel);min-width:460px;}
+  th,td{padding:7px 10px;text-align:right;border-bottom:1px solid var(--hair);white-space:nowrap;}
+  th{font-size:.62rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);background:var(--panel-2);}
+  th:first-child,td:first-child{text-align:left;}
+  td.mono{font-family:var(--mono);font-variant-numeric:tabular-nums;}
+  td.pos{color:var(--long);font-weight:620;} td.neg{color:var(--short);font-weight:620;}
+  .chip{font-family:var(--mono);font-size:.68rem;padding:1px 6px;border-radius:999px;font-weight:600;}
+  .chip.l{color:var(--long);background:color-mix(in srgb,var(--long) 15%,transparent);}
+  .chip.s{color:var(--short);background:color-mix(in srgb,var(--short) 15%,transparent);}
+
+  details{margin-top:12px;} summary{cursor:pointer;font-size:.85rem;color:var(--accent);font-weight:600;}
+  .note{border-radius:12px;padding:14px 16px;margin:16px 0 0;font-size:.88rem;border:1px solid var(--hair-strong);background:var(--panel);border-left:3px solid var(--teal);color:var(--ink-soft);}
+  .note b{color:var(--ink);}
+  .callout-label{font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:5px;color:var(--teal);}
+  footer{padding:26px 0 60px;color:var(--ink-faint);font-size:.8rem;}
+  .disc{border:1px solid var(--hair);border-radius:12px;padding:14px 16px;background:var(--panel);}
+  .muted{color:var(--ink-faint);font-size:.8rem;}
+</style>
+
+<header class="hero"><div class="wrap hero-inner">
+  <div class="kicker"><span class="dot"></span> Programmable rules · any market · backtest before you risk anything</div>
+  <h1>Strategy Lab</h1>
+  <p class="lede">Define your triggers — trend, Fibonacci pocket, candle pattern, RSI — set a profit target and a stop, then run it across a market's history. It reports whether the rule set actually has an edge, in R (so it works on any market or timeframe). Paste your own candles or use the samples.</p>
+</div></header>
+
+<main class="wrap">
+<div class="grid">
+
+  <!-- ============ LEFT: RULE BUILDER ============ -->
+  <div>
+    <div class="card">
+      <div class="seclab">1 · Data</div>
+      <div class="row"><span class="muted" style="flex:1">Sample market (generated):</span></div>
+      <div class="seg" id="mktseg" role="group" aria-label="sample market">
+        <button data-v="oil" aria-pressed="true">Oil</button>
+        <button data-v="spx" aria-pressed="false">S&amp;P</button>
+        <button data-v="btc" aria-pressed="false">Bitcoin</button>
+      </div>
+      <div class="row" style="margin-top:10px;">
+        <button class="btn ghost" id="regen">↻ New sample data</button>
+        <button class="btn ghost" id="togglecsv">Paste CSV…</button>
+      </div>
+      <div id="csvbox" style="display:none;margin-top:8px;">
+        <textarea id="csv" rows="5" placeholder="Paste OHLC — header optional. e.g.&#10;date,open,high,low,close&#10;2026-01-02,74.1,74.9,73.8,74.6&#10;... (any market, any timeframe)"></textarea>
+        <div class="row"><button class="btn ghost" id="loadcsv">Load pasted candles</button><span class="muted" id="csvmsg"></span></div>
+      </div>
+      <div class="muted" id="datainfo" style="margin-top:8px;"></div>
+    </div>
+
+    <div class="card">
+      <div class="seclab">2 · Direction</div>
+      <div class="seg dir" id="dirseg" role="group" aria-label="direction">
+        <button data-v="long" aria-pressed="true">▲ Long</button>
+        <button data-v="short" aria-pressed="false">▼ Short</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="seclab">3 · Entry triggers <span class="muted">(all enabled must be true)</span></div>
+
+      <div class="cond" id="c-trend" data-on="1">
+        <div class="head"><input type="checkbox" id="e-trend" checked><label for="e-trend">Trend filter</label></div>
+        <div class="body">EMA <input type="number" id="emaFast" value="9" min="1"> over <input type="number" id="emaSlow" value="21" min="2"> (in trade direction)</div>
+      </div>
+
+      <div class="cond" id="c-fib" data-on="1">
+        <div class="head"><input type="checkbox" id="e-fib" checked><label for="e-fib">Fibonacci golden zone</label></div>
+        <div class="body">0.5–0.72 retrace of last <input type="number" id="swing" value="20" min="4"> bars</div>
+      </div>
+
+      <div class="cond" id="c-candle" data-on="1">
+        <div class="head"><input type="checkbox" id="e-candle" checked><label for="e-candle">Candle pattern</label></div>
+        <div class="body"><select id="candle"><option value="rejection">Rejection wick</option><option value="hammer">Hammer / star</option><option value="engulf">Engulfing</option></select></div>
+      </div>
+
+      <div class="cond off" id="c-rsi" data-on="0">
+        <div class="head"><input type="checkbox" id="e-rsi"><label for="e-rsi">RSI filter</label></div>
+        <div class="body">RSI(<input type="number" id="rsiLen" value="14" min="2">) <select id="rsiOp"><option value="lt">&lt;</option><option value="gt">&gt;</option></select> <input type="number" id="rsiVal" value="40" min="1" max="99"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="seclab">4 · Exit rules</div>
+      <div class="row"><label class="t">Profit target</label><input type="number" id="tgtVal" value="2" min="0" step="0.1"><select id="tgtUnit"><option value="R">R (× risk)</option><option value="pct">%</option><option value="pts">points</option></select></div>
+      <div class="row"><label class="t">Stop loss</label><input type="number" id="stopVal" value="0.5" min="0.01" step="0.05"><select id="stopUnit"><option value="pct">%</option><option value="pts">points</option></select></div>
+      <div class="row"><label class="t">Max hold (bars)</label><input type="number" id="maxHold" value="40" min="1"></div>
+      <div class="muted">Target/stop define your <b>R</b>. Target in “R” = a multiple of the stop distance.</div>
+    </div>
+
+    <div class="card">
+      <button class="btn primary" id="run">▶ Run backtest</button>
+    </div>
+  </div>
+
+  <!-- ============ RIGHT: RESULTS ============ -->
+  <div>
+    <div class="card">
+      <h2>Results <span class="sub" id="resmeta"></span></h2>
+      <div id="empty" class="muted" style="padding:20px 0;">Set your rules and press <b>Run backtest</b>. Results are in <b>R-multiples</b> so they compare across any market.</div>
+      <div id="results" style="display:none">
+        <div class="tiles">
+          <div class="tile"><div class="k">Trades</div><div class="v" id="r-n">—</div></div>
+          <div class="tile"><div class="k">Win rate</div><div class="v" id="r-wr">—</div></div>
+          <div class="tile"><div class="k">Expectancy</div><div class="v" id="r-exp">—</div></div>
+          <div class="tile"><div class="k">Net R</div><div class="v" id="r-net">—</div></div>
+          <div class="tile"><div class="k">Profit factor</div><div class="v" id="r-pf">—</div></div>
+          <div class="tile"><div class="k">Max drawdown</div><div class="v" id="r-dd">—</div></div>
+        </div>
+        <div class="verdict" id="verdict"></div>
+
+        <div class="chart-wrap">
+          <div class="cl"><span>Price + trades <span id="clname" class="mono"></span></span><span class="mono">▲ entry · ● exit</span></div>
+          <canvas id="price" width="900" height="300"></canvas>
+        </div>
+        <div class="chart-wrap">
+          <div class="cl"><span>Equity curve (cumulative R)</span><span class="mono" id="eqfinal"></span></div>
+          <canvas id="equity" width="900" height="180"></canvas>
+        </div>
+
+        <details><summary id="trsum">Show trades</summary>
+          <div class="tbl-shell"><table><thead><tr><th>#</th><th>Dir</th><th class="mono">Entry bar</th><th class="mono">Entry</th><th class="mono">Exit</th><th class="mono">Bars</th><th class="mono">Result</th><th>Why exit</th></tr></thead><tbody id="trbody"></tbody></table></div>
+        </details>
+
+        <details><summary>Rule config (JSON — save &amp; reuse)</summary>
+          <textarea id="cfgjson" rows="10" spellcheck="false"></textarea>
+          <div class="row"><button class="btn ghost" id="applycfg">Apply JSON to controls</button><span class="muted" id="cfgmsg"></span></div>
+        </details>
+      </div>
+    </div>
+
+    <div class="note">
+      <span class="callout-label">Read this before you trust a number</span>
+      A great backtest is <b>not</b> a promise. Beware <b>overfitting</b> — if you tweak rules until the sample looks perfect, you've curve-fit to noise. The samples here are <b>randomly generated</b>, so a strategy that "wins" on one may lose on the next “New sample data” — that variance is the honest lesson. Test on <b>real, out-of-sample</b> candles, expect a lower live win rate, and never risk money on a rule set you haven't also forward-tested on a paper account.
+    </div>
+  </div>
+</div>
+</main>
+
+<footer><div class="wrap"><div class="disc">
+  <p style="margin:0;">Education, not financial advice. A backtester measures how rules <em>would have</em> behaved on the data you give it — it does not predict the future, and past performance never guarantees future results. Companion to the Confluence Playbook &amp; Trade Journal.</p>
+</div></div></footer>
+
+<script>
+(function(){
+  // ---------------- data ----------------
+  var MKT={ oil:{p:75,vol:0.010,dp:2}, spx:{p:6000,vol:0.007,dp:2}, btc:{p:100000,vol:0.022,dp:0} };
+  var mkt='oil', DATA=[], dataName='';
+
+  function randn(){ return (Math.random()+Math.random()+Math.random()+Math.random()-2)/0.816; }
+  function genData(m){
+    var cfg=MKT[m], N=700, p=cfg.p, out=[], regime=0, rc=0;
+    for(var i=0;i<N;i++){
+      if(rc<=0){ regime=(Math.random()-0.5)*2; rc=20+Math.floor(Math.random()*40); }
+      rc--;
+      var drift=regime*cfg.vol*0.35;
+      var o=p;
+      var c=o*(1+drift+cfg.vol*randn());
+      var hi=Math.max(o,c)*(1+Math.abs(cfg.vol*randn())*0.7);
+      var lo=Math.min(o,c)*(1-Math.abs(cfg.vol*randn())*0.7);
+      out.push([o,hi,lo,c]); p=c;
+    }
+    return out;
+  }
+  function parseCSV(txt){
+    var lines=txt.trim().split(/\r?\n/).filter(function(l){return l.trim();});
+    if(!lines.length) return null;
+    var out=[], start=0, idx={o:1,h:2,l:3,c:4};
+    var head=lines[0].toLowerCase();
+    if(/[a-z]/.test(head)){
+      var cols=head.split(/[,\t;]/).map(function(s){return s.trim();});
+      var fo=cols.indexOf('open'),fh=cols.indexOf('high'),fl=cols.indexOf('low'),fc=cols.indexOf('close');
+      if(fo>=0&&fh>=0&&fl>=0&&fc>=0){ idx={o:fo,h:fh,l:fl,c:fc}; }
+      start=1;
+    } else { // no header, assume o,h,l,c or date,o,h,l,c
+      var first=lines[0].split(/[,\t;]/);
+      idx = first.length>=5 ? {o:1,h:2,l:3,c:4} : {o:0,h:1,l:2,c:3};
+    }
+    for(var i=start;i<lines.length;i++){
+      var f=lines[i].split(/[,\t;]/);
+      var o=parseFloat(f[idx.o]),h=parseFloat(f[idx.h]),l=parseFloat(f[idx.l]),c=parseFloat(f[idx.c]);
+      if([o,h,l,c].every(function(x){return isFinite(x);})) out.push([o,h,l,c]);
+    }
+    return out.length>=30?out:null;
+  }
+
+  // ---------------- indicators ----------------
+  function ema(a,len){ var k=2/(len+1),o=[],prev=a[0]; for(var i=0;i<a.length;i++){ prev=i?a[i]*k+prev*(1-k):a[0]; o.push(prev);} return o; }
+  function rsi(cl,len){ var o=new Array(cl.length).fill(null),g=0,l=0,i;
+    for(i=1;i<=len&&i<cl.length;i++){ var d=cl[i]-cl[i-1]; g+=Math.max(0,d); l+=Math.max(0,-d); }
+    g/=len; l/=len; if(len<cl.length) o[len]=100-100/(1+g/(l||1e-9));
+    for(i=len+1;i<cl.length;i++){ var d2=cl[i]-cl[i-1]; g=(g*(len-1)+Math.max(0,d2))/len; l=(l*(len-1)+Math.max(0,-d2))/len; o[i]=100-100/(1+g/(l||1e-9)); }
+    return o; }
+
+  // candle patterns (dir: 1 long-ish rejection at bottom, -1 short at top)
+  function candleOK(C,i,type,dir){
+    var o=C[i][0],h=C[i][1],l=C[i][2],c=C[i][3]; var body=Math.abs(c-o)||1e-9;
+    var upW=h-Math.max(o,c), loW=Math.min(o,c)-l;
+    if(type==='rejection'){ return dir>0 ? loW>=body*1.2 : upW>=body*1.2; }
+    if(type==='hammer'){ return dir>0 ? (loW>=body*2 && upW<=body*0.6) : (upW>=body*2 && loW<=body*0.6); }
+    if(type==='engulf'){ if(i<1)return false; var po=C[i-1][0],pc=C[i-1][3];
+      return dir>0 ? (c>o && pc<po && c>=po && o<=pc) : (c<o && pc>po && c<=po && o>=pc); }
+    return true;
+  }
+  // fib pocket membership at bar i using prior `lb` bars
+  function fibOK(C,i,lb,dir){
+    if(i<lb) return false;
+    var H=-Infinity,L=Infinity;
+    for(var k=i-lb;k<i;k++){ if(C[k][1]>H)H=C[k][1]; if(C[k][2]<L)L=C[k][2]; }
+    var rng=H-L; if(rng<=0) return false;
+    if(dir>0){ var pLow=H-0.72*rng, pHigh=H-0.5*rng; return C[i][2]<=pHigh && C[i][3]>=pLow; }
+    else { var b50=L+0.5*rng, b72=L+0.72*rng; return C[i][1]>=b50 && C[i][3]<=b72; }
+  }
+
+  // ---------------- config from controls ----------------
+  function $(id){ return document.getElementById(id); }
+  function getCfg(){
+    return {
+      direction: dir,
+      entry:{
+        trend:{on:$('e-trend').checked, fast:+$('emaFast').value, slow:+$('emaSlow').value},
+        fib:{on:$('e-fib').checked, lookback:+$('swing').value},
+        candle:{on:$('e-candle').checked, type:$('candle').value},
+        rsi:{on:$('e-rsi').checked, len:+$('rsiLen').value, op:$('rsiOp').value, val:+$('rsiVal').value}
+      },
+      exit:{ target:+$('tgtVal').value, targetUnit:$('tgtUnit').value, stop:+$('stopVal').value, stopUnit:$('stopUnit').value, maxHold:+$('maxHold').value }
+    };
+  }
+
+  // ---------------- backtest ----------------
+  function backtest(C,cfg){
+    var dir=cfg.direction==='long'?1:-1;
+    var closes=C.map(function(x){return x[3];});
+    var ef=ema(closes,cfg.entry.trend.fast), es=ema(closes,cfg.entry.trend.slow), rs=rsi(closes,cfg.entry.rsi.len);
+    var warm=Math.max(cfg.entry.trend.slow, cfg.entry.fib.lookback, cfg.entry.rsi.len)+1;
+    var trades=[], i=warm, inPos=false;
+    while(i<C.length){
+      // entry check when flat
+      var ok=true;
+      if(cfg.entry.trend.on){ ok = ok && (dir>0 ? ef[i]>es[i] : ef[i]<es[i]); }
+      if(ok&&cfg.entry.fib.on){ ok = ok && fibOK(C,i,cfg.entry.fib.lookback,dir); }
+      if(ok&&cfg.entry.candle.on){ ok = ok && candleOK(C,i,cfg.entry.candle.type,dir); }
+      if(ok&&cfg.entry.rsi.on){ var v=rs[i]; ok = ok && v!=null && (cfg.entry.rsi.op==='lt'? v<cfg.entry.rsi.val : v>cfg.entry.rsi.val); }
+      if(!ok){ i++; continue; }
+
+      // enter at close of bar i
+      var entry=C[i][3];
+      var stopDist = cfg.exit.stopUnit==='pct' ? entry*cfg.exit.stop/100 : cfg.exit.stop;
+      if(stopDist<=0){ i++; continue; }
+      var tgtDist = cfg.exit.targetUnit==='R' ? cfg.exit.target*stopDist : (cfg.exit.targetUnit==='pct'? entry*cfg.exit.target/100 : cfg.exit.target);
+      var stopP = dir>0? entry-stopDist : entry+stopDist;
+      var tgtP  = dir>0? entry+tgtDist : entry-tgtDist;
+
+      var exitP=null, exitBar=null, why='';
+      for(var j=i+1;j<C.length && j<=i+cfg.exit.maxHold;j++){
+        var hi=C[j][1], lo=C[j][2];
+        if(dir>0){
+          if(lo<=stopP){ exitP=stopP; exitBar=j; why='stop'; break; }
+          if(hi>=tgtP){ exitP=tgtP; exitBar=j; why='target'; break; }
+        } else {
+          if(hi>=stopP){ exitP=stopP; exitBar=j; why='stop'; break; }
+          if(lo<=tgtP){ exitP=tgtP; exitBar=j; why='target'; break; }
+        }
+      }
+      if(exitP==null){ exitBar=Math.min(i+cfg.exit.maxHold, C.length-1); exitP=C[exitBar][3]; why='max hold'; }
+      var R = dir>0 ? (exitP-entry)/stopDist : (entry-exitP)/stopDist;
+      trades.push({dir:cfg.direction, ei:i, entry:entry, xi:exitBar, exit:exitP, bars:exitBar-i, R:R, why:why});
+      i = exitBar+1; // no overlapping positions
+    }
+    return trades;
+  }
+
+  function stats(trades){
+    var n=trades.length; if(!n) return null;
+    var wins=0,gW=0,gL=0,sum=0,cum=0,peak=0,dd=0,curve=[0];
+    trades.forEach(function(t){ sum+=t.R; cum+=t.R; curve.push(cum); if(cum>peak)peak=cum; if(peak-cum>dd)dd=peak-cum;
+      if(t.R>0){wins++;gW+=t.R;} else if(t.R<0){gL+=-t.R;} });
+    return { n:n, winRate:wins/n*100, exp:sum/n, net:sum, pf: gL>0?gW/gL:(gW>0?Infinity:0), dd:dd, curve:curve, wins:wins, losses:n-wins };
+  }
+
+  // ---------------- render ----------------
+  function cssv(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+  function fmtP(x){ var dp=MKT[mkt]?MKT[mkt].dp:2; return x.toLocaleString('en-US',{minimumFractionDigits:dp,maximumFractionDigits:dp}); }
+  function fnum(x,d){ return x.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d}); }
+
+  function drawPrice(C,trades){
+    var cv=$('price'),ctx=cv.getContext('2d'); var DPR=Math.min(2,window.devicePixelRatio||1);
+    var w=cv.clientWidth||880, h=300; cv.width=w*DPR; cv.height=h*DPR; ctx.setTransform(DPR,0,0,DPR,0,0);
+    ctx.clearRect(0,0,w,h);
+    var lo=Infinity,hi=-Infinity; C.forEach(function(k){ if(k[2]<lo)lo=k[2]; if(k[1]>hi)hi=k[1]; });
+    var pad=10, iw=w-pad*2, ih=h-pad*2, N=C.length;
+    function X(i){ return pad+(i/(N-1))*iw; } function Y(p){ return pad+(1-(p-lo)/(hi-lo))*ih; }
+    // price line
+    ctx.strokeStyle=cssv('--ink-faint'); ctx.globalAlpha=.6; ctx.lineWidth=1; ctx.beginPath();
+    C.forEach(function(k,i){ var x=X(i),y=Y(k[3]); i?ctx.lineTo(x,y):ctx.moveTo(x,y); }); ctx.stroke(); ctx.globalAlpha=1;
+    // trades
+    trades.forEach(function(t){
+      var win=t.R>0; var col=win?cssv('--long'):cssv('--short');
+      var ex=X(t.ei),ey=Y(t.entry), xx=X(t.xi),xy=Y(t.exit);
+      ctx.strokeStyle=col; ctx.globalAlpha=.5; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(ex,ey); ctx.lineTo(xx,xy); ctx.stroke(); ctx.globalAlpha=1;
+      // entry triangle
+      ctx.fillStyle=cssv('--accent'); ctx.beginPath();
+      if(t.dir==='long'){ ctx.moveTo(ex,ey-6);ctx.lineTo(ex-4,ey+2);ctx.lineTo(ex+4,ey+2);}else{ctx.moveTo(ex,ey+6);ctx.lineTo(ex-4,ey-2);ctx.lineTo(ex+4,ey-2);}
+      ctx.closePath(); ctx.fill();
+      // exit dot
+      ctx.fillStyle=col; ctx.beginPath(); ctx.arc(xx,xy,3,0,7); ctx.fill();
+    });
+  }
+  function drawEquity(curve){
+    var cv=$('equity'),ctx=cv.getContext('2d'); var DPR=Math.min(2,window.devicePixelRatio||1);
+    var w=cv.clientWidth||880,h=180; cv.width=w*DPR;cv.height=h*DPR;ctx.setTransform(DPR,0,0,DPR,0,0); ctx.clearRect(0,0,w,h);
+    var lo=Math.min.apply(null,curve),hi=Math.max.apply(null,curve); if(lo===hi){lo-=1;hi+=1;}
+    var pad=10,iw=w-pad*2,ih=h-pad*2;
+    function X(i){ return pad+(curve.length<2?0:(i/(curve.length-1))*iw);} function Y(v){ return pad+(1-(v-lo)/(hi-lo))*ih;}
+    var zy=Y(0); ctx.strokeStyle=cssv('--hair-strong'); ctx.setLineDash([4,4]); ctx.beginPath(); ctx.moveTo(pad,zy);ctx.lineTo(w-pad,zy);ctx.stroke();ctx.setLineDash([]);
+    var final=curve[curve.length-1], col=final>=0?cssv('--long'):cssv('--short');
+    var g=ctx.createLinearGradient(0,pad,0,h-pad); g.addColorStop(0,col+'44'); g.addColorStop(1,col+'00');
+    ctx.beginPath(); curve.forEach(function(v,i){var x=X(i),y=Y(v); i?ctx.lineTo(x,y):ctx.moveTo(x,y);});
+    ctx.lineTo(X(curve.length-1),h-pad); ctx.lineTo(X(0),h-pad); ctx.closePath(); ctx.fillStyle=g; ctx.fill();
+    ctx.beginPath(); curve.forEach(function(v,i){var x=X(i),y=Y(v); i?ctx.lineTo(x,y):ctx.moveTo(x,y);}); ctx.strokeStyle=col; ctx.lineWidth=2; ctx.stroke();
+  }
+
+  function run(){
+    if(!DATA.length){ alert('Load some data first.'); return; }
+    var cfg=getCfg();
+    if(!cfg.entry.trend.on && !cfg.entry.fib.on && !cfg.entry.candle.on && !cfg.entry.rsi.on){ alert('Enable at least one entry trigger.'); return; }
+    var trades=backtest(DATA,cfg), st=stats(trades);
+    $('empty').style.display='none'; $('results').style.display='block';
+    $('resmeta').textContent = dataName+' · '+DATA.length+' bars';
+    $('clname').textContent = dataName;
+    $('cfgjson').value = JSON.stringify(cfg,null,2);
+
+    if(!st){
+      $('r-n').textContent='0'; ['r-wr','r-exp','r-net','r-pf','r-dd'].forEach(function(id){$(id).textContent='—';$(id).className='v';});
+      $('verdict').className='verdict meh'; $('verdict').innerHTML='<b>No trades triggered.</b> Your rules were too strict for this data — loosen a filter (e.g. widen the Fib lookback or drop a condition) and run again.';
+      $('trbody').innerHTML=''; $('trsum').textContent='Show trades (0)';
+      drawPrice(DATA,[]); drawEquity([0]); return;
+    }
+    function set(id,txt,cls){ var e=$(id); e.textContent=txt; e.className='v'+(cls?' '+cls:''); }
+    set('r-n', st.n);
+    set('r-wr', Math.round(st.winRate)+'%');
+    set('r-exp',(st.exp>=0?'+':'−')+fnum(Math.abs(st.exp),2)+'R', st.exp>0?'pos':(st.exp<0?'neg':''));
+    set('r-net',(st.net>=0?'+':'−')+fnum(Math.abs(st.net),1)+'R', st.net>0?'pos':(st.net<0?'neg':''));
+    set('r-pf', st.pf===Infinity?'∞':fnum(st.pf,2), st.pf>=1?'pos':(st.pf<1?'neg':''));
+    set('r-dd','−'+fnum(st.dd,1)+'R','neg');
+    $('eqfinal').textContent=(st.net>=0?'+':'−')+fnum(Math.abs(st.net),1)+'R';
+
+    // verdict
+    var v=$('verdict'),cls,msg;
+    if(st.n<20){ cls='meh'; msg='<b>Too few trades ('+st.n+') to judge.</b> Expectancy needs 30+ samples to mean anything. Use more data or looser rules — then re-test on a <em>different</em> sample.'; }
+    else if(st.exp>0.1 && st.pf>=1.3){ cls='good'; msg='<b>Positive edge on this data</b> — '+fnum(st.exp,2)+'R/trade, profit factor '+fnum(st.pf,2)+'. Promising, but confirm it holds on <em>other</em> samples (hit “New sample data”) and real out-of-sample candles before trusting it.'; }
+    else if(st.exp<=0){ cls='bad'; msg='<b>No edge — this loses.</b> Negative expectancy ('+fnum(st.exp,2)+'R/trade). This rule set would bleed money live. Change the triggers or exits, don’t just re-run hoping.'; }
+    else { cls='meh'; msg='<b>Marginal.</b> Slightly positive ('+fnum(st.exp,2)+'R) but thin — costs/slippage could erase it. Tighten the setup or improve the reward:risk before considering it real.'; }
+    v.className='verdict '+cls; v.innerHTML=msg;
+
+    // table
+    $('trsum').textContent='Show trades ('+st.n+')';
+    var rows=trades.slice(0,60).map(function(t,k){
+      var win=t.R>0;
+      return '<tr><td>'+(k+1)+'</td><td><span class="chip '+(t.dir==='long'?'l':'s')+'">'+(t.dir==='long'?'L':'S')+'</span></td>'+
+        '<td class="mono">'+t.ei+'</td><td class="mono">'+fmtP(t.entry)+'</td><td class="mono">'+fmtP(t.exit)+'</td>'+
+        '<td class="mono">'+t.bars+'</td><td class="mono '+(win?'pos':'neg')+'">'+(t.R>=0?'+':'−')+fnum(Math.abs(t.R),2)+'R</td>'+
+        '<td>'+t.why+'</td></tr>';
+    }).join('');
+    $('trbody').innerHTML=rows + (st.n>60?'<tr><td colspan="8" class="muted" style="text-align:center">…and '+(st.n-60)+' more</td></tr>':'');
+
+    drawPrice(DATA,trades); drawEquity(st.curve);
+  }
+
+  // ---------------- wiring ----------------
+  var dir='long';
+  function setData(arr,name){ DATA=arr; dataName=name; $('datainfo').innerHTML='Loaded <b>'+arr.length+'</b> bars · <span class="mono">'+name+'</span>'; }
+  function loadSample(){ setData(genData(mkt), ({oil:'Oil (sample)',spx:'S&P (sample)',btc:'Bitcoin (sample)'})[mkt]); }
+
+  document.querySelectorAll('#mktseg button').forEach(function(b){ b.addEventListener('click',function(){
+    document.querySelectorAll('#mktseg button').forEach(function(x){x.setAttribute('aria-pressed','false');}); b.setAttribute('aria-pressed','true');
+    mkt=b.getAttribute('data-v'); loadSample();
+  });});
+  document.querySelectorAll('#dirseg button').forEach(function(b){ b.addEventListener('click',function(){
+    document.querySelectorAll('#dirseg button').forEach(function(x){x.setAttribute('aria-pressed','false');}); b.setAttribute('aria-pressed','true'); dir=b.getAttribute('data-v');
+  });});
+  $('regen').addEventListener('click',loadSample);
+  $('togglecsv').addEventListener('click',function(){ var b=$('csvbox'); b.style.display=b.style.display==='none'?'block':'none'; });
+  $('loadcsv').addEventListener('click',function(){ var d=parseCSV($('csv').value); if(!d){ $('csvmsg').textContent='Could not parse — need ≥30 rows of OHLC.'; return; } $('csvmsg').textContent='✓ loaded'; setData(d,'Pasted CSV'); });
+  // condition enable toggles dim the card
+  [['e-trend','c-trend'],['e-fib','c-fib'],['e-candle','c-candle'],['e-rsi','c-rsi']].forEach(function(p){
+    $(p[0]).addEventListener('change',function(){ $(p[1]).classList.toggle('off',!$(p[0]).checked); });
+  });
+  $('run').addEventListener('click',run);
+  $('applycfg').addEventListener('click',function(){
+    try{ var c=JSON.parse($('cfgjson').value);
+      dir=c.direction; document.querySelectorAll('#dirseg button').forEach(function(x){x.setAttribute('aria-pressed', x.getAttribute('data-v')===dir?'true':'false');});
+      $('e-trend').checked=c.entry.trend.on; $('emaFast').value=c.entry.trend.fast; $('emaSlow').value=c.entry.trend.slow;
+      $('e-fib').checked=c.entry.fib.on; $('swing').value=c.entry.fib.lookback;
+      $('e-candle').checked=c.entry.candle.on; $('candle').value=c.entry.candle.type;
+      $('e-rsi').checked=c.entry.rsi.on; $('rsiLen').value=c.entry.rsi.len; $('rsiOp').value=c.entry.rsi.op; $('rsiVal').value=c.entry.rsi.val;
+      $('tgtVal').value=c.exit.target; $('tgtUnit').value=c.exit.targetUnit; $('stopVal').value=c.exit.stop; $('stopUnit').value=c.exit.stopUnit; $('maxHold').value=c.exit.maxHold;
+      [['e-trend','c-trend'],['e-fib','c-fib'],['e-candle','c-candle'],['e-rsi','c-rsi']].forEach(function(p){ $(p[1]).classList.toggle('off',!$(p[0]).checked); });
+      $('cfgmsg').textContent='✓ applied — press Run';
+    }catch(e){ $('cfgmsg').textContent='Invalid JSON'; }
+  });
+
+  loadSample();
+})();
+</script>
