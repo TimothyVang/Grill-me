@@ -18,9 +18,11 @@ Open any of them directly in a browser; there are no dependencies or build step.
 | [`trade-replay.html`](trade-replay.html) | An animated replay — press play and watch the same setup **win (+5R)** or **lose (−1R)** on any market, with live entry/stop/target and R-multiple. |
 | [`setup-trainer.html`](setup-trainer.html) | A practice drill: get dealt randomized setups, decide **Take** or **Pass**, and get scored on the *decision* (not the outcome), with per-market accuracy tracking. |
 | [`trade-journal.html`](trade-journal.html) | Log trades and auto-compute P&L, R-multiple, win rate, expectancy, profit factor, an equity curve, and a **per-market breakdown**. Saves in the browser; exports CSV. |
+| [`strategy-lab.html`](strategy-lab.html) | A **programmable rule backtester**: define entry triggers (trend / Fibonacci golden zone / candle pattern / RSI) and a profit-target + stop exit, then run it over any market's candles — built-in samples or **pasted CSV** (e.g. a TradingView export). Reports win rate, expectancy, profit factor, max drawdown, and an equity curve in **R**, with a plain-English edge verdict. Every rule set serializes to reusable JSON. |
 
 The trainer and journal persist data in the browser's `localStorage`, so use the
-journal's **Export CSV** for backups.
+journal's **Export CSV** for backups. The Strategy Lab accepts real historical
+candles via CSV paste, so you can backtest your actual market and timeframe.
 
 ## End-to-end demos
 
@@ -60,7 +62,8 @@ price scale changes.
 2. **TradingView Setup** — get the markets and indicators on screen (free).
 3. **Trade Replay** — see what a winning *and* losing setup looks like.
 4. **Setup Trainer** — drill recognizing the setup until it's automatic.
-5. **Journal** — record real paper trades and find out if you actually have an edge.
+5. **Strategy Lab** — turn a rule idea into evidence: backtest it on real candles before risking anything.
+6. **Journal** — record real paper trades and find out if you actually have an edge.
 
 ## Honest disclaimer
 
