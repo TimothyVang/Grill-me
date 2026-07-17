@@ -22,6 +22,11 @@ Open any of them directly in a browser; there are no dependencies or build step.
 | [`auto-optimizer.html`](auto-optimizer.html) | A **self-searching optimizer** ("machine learning, the honest kind"): it tries hundreds of rule combinations, learns the best on a training slice, then tests that winner on data it never saw. The in-sample vs **out-of-sample** gap exposes overfitting — most "winners" collapse on unseen data, and the tool says so. |
 | [`live-recorder.html`](live-recorder.html) ⚠️ *run locally* | **Records real market candles** from a live, keyless crypto feed (BTC / ETH / SOL via Coinbase), charts them live, and **exports CSV** to feed the Strategy Lab and Auto-Optimizer. Must be **opened as a local file** — hosted sandboxes block live network access. |
 
+For a **24/7, always-on** version that records candles and re-runs the backtest in
+the cloud on a schedule (no browser, no tokens, paper only), see
+[`server/`](server/) — a ready-to-deploy [Val Town](https://val.town) project
+(cron recorder + live dashboard).
+
 The trainer, journal, and recorder persist data in the browser's `localStorage`,
 so use **Export CSV** for backups. The Strategy Lab and Auto-Optimizer accept real
 historical candles via CSV paste, so you can backtest your actual market and
