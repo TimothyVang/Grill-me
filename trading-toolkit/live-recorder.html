@@ -1,0 +1,206 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Live Candle Recorder</title>
+<style>
+  :root{
+    --ground:#0e1016;--panel:#161922;--panel-2:#1d212b;--ink:#e9e6df;--ink-soft:#a9a6a0;--ink-faint:#726f6a;
+    --hair:#242833;--hair-strong:#333844;--accent:#cf9f52;--accent-bright:#e2b46a;--teal:#4fb0ad;
+    --long:#57bd80;--short:#df7d78;--shadow:0 1px 2px rgba(0,0,0,.3),0 12px 38px rgba(0,0,0,.4);
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;--sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:960px;margin:0 auto;padding:0 20px;}
+  .mono{font-family:var(--mono);font-variant-numeric:tabular-nums;}
+  h1{font-size:clamp(1.7rem,4.5vw,2.5rem);letter-spacing:-.03em;margin:0;line-height:1.14;}
+  header{border-bottom:1px solid var(--hair);padding:34px 0 24px;background:radial-gradient(130% 100% at 88% -25%,color-mix(in srgb,var(--accent) 14%,transparent),transparent 60%);}
+  .kicker{font-family:var(--mono);font-size:.71rem;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:12px;display:flex;align-items:center;gap:10px;}
+  .kicker .dot{width:8px;height:8px;border-radius:50%;background:var(--short);}
+  .kicker .dot.live{background:var(--long);box-shadow:0 0 0 4px color-mix(in srgb,var(--long) 25%,transparent);animation:pulse 1.6s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+  .lede{color:var(--ink-soft);max-width:64ch;margin:.5em 0 0;}
+  section{padding:20px 0;}
+  .bar{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;}
+  .fld{display:flex;flex-direction:column;gap:4px;}
+  .fld label{font-size:.68rem;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft);font-weight:640;}
+  select{font-family:var(--mono);font-size:.9rem;padding:8px 10px;border-radius:8px;border:1px solid var(--hair-strong);background:var(--panel-2);color:var(--ink);}
+  .btn{font-family:var(--sans);font-size:.92rem;font-weight:660;padding:10px 20px;border-radius:10px;border:1px solid transparent;cursor:pointer;}
+  .btn.primary{background:var(--accent);color:#111;} .btn.primary:hover{background:var(--accent-bright);}
+  .btn.stop{background:var(--short);color:#fff;}
+  .btn.ghost{background:transparent;border-color:var(--hair-strong);color:var(--ink-soft);} .btn.ghost:hover{border-color:var(--accent);color:var(--accent);}
+  .btn:disabled{opacity:.5;cursor:default;}
+  .stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px;}
+  @media(max-width:640px){.stat-row{grid-template-columns:repeat(2,1fr);}}
+  .stat{background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:12px 14px;box-shadow:var(--shadow);}
+  .stat .k{font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint);}
+  .stat .v{font-family:var(--mono);font-size:1.35rem;font-weight:680;margin-top:3px;}
+  .stat .v.up{color:var(--long);} .stat .v.dn{color:var(--short);}
+  .chart-wrap{background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:12px;margin-top:16px;box-shadow:var(--shadow);}
+  canvas{display:block;width:100%;height:auto;}
+  .status{font-size:.82rem;color:var(--ink-faint);margin-top:10px;font-family:var(--mono);}
+  .status.err{color:var(--short);}
+  .status.ok{color:var(--long);}
+  .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;}
+  .note{border-radius:12px;padding:14px 16px;margin:16px 0 0;font-size:.86rem;border:1px solid var(--hair-strong);background:var(--panel);border-left:3px solid var(--teal);color:var(--ink-soft);}
+  .note.warn{border-left-color:var(--accent);}
+  .note b{color:var(--ink);}
+  .callout-label{font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:5px;color:var(--teal);}
+  .note.warn .callout-label{color:var(--accent);}
+  code{font-family:var(--mono);background:var(--panel-2);padding:1px 6px;border-radius:5px;color:var(--accent);}
+  footer{padding:24px 0 50px;color:var(--ink-faint);font-size:.8rem;}
+</style></head><body>
+<header><div class="wrap">
+  <div class="kicker"><span class="dot" id="dot"></span> <span id="connlabel">not recording</span> · live crypto candles · no API key</div>
+  <h1>Live Candle Recorder</h1>
+  <p class="lede">Records real market candles straight from a live exchange feed, then exports them as CSV to drop into the <b>Strategy Lab</b> and <b>Auto-Optimizer</b>. Free public data — Bitcoin, Ethereum, Solana.</p>
+</div></header>
+
+<main class="wrap">
+  <section>
+    <div class="bar">
+      <div class="fld"><label>Market</label><select id="product"><option value="BTC-USD">Bitcoin · BTC-USD</option><option value="ETH-USD">Ethereum · ETH-USD</option><option value="SOL-USD">Solana · SOL-USD</option></select></div>
+      <div class="fld"><label>Candle size</label><select id="gran"><option value="60">1 minute</option><option value="300" selected>5 minutes</option><option value="900">15 minutes</option><option value="3600">1 hour</option></select></div>
+      <div class="fld"><label>&nbsp;</label><button class="btn primary" id="start">● Start recording</button></div>
+      <div class="fld"><label>&nbsp;</label><button class="btn ghost" id="stop" disabled>■ Stop</button></div>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat"><div class="k">Live price</div><div class="v" id="s-price">—</div></div>
+      <div class="stat"><div class="k">Candles recorded</div><div class="v" id="s-count">0</div></div>
+      <div class="stat"><div class="k">Latest candle (O→C)</div><div class="v" id="s-last" style="font-size:1rem">—</div></div>
+      <div class="stat"><div class="k">Span</div><div class="v" id="s-span" style="font-size:1rem">—</div></div>
+    </div>
+
+    <div class="chart-wrap"><canvas id="cv" width="900" height="320" aria-label="Live candlestick chart"></canvas></div>
+    <div class="status" id="status">Pick a market and press Start. History is fetched first, then it updates live.</div>
+
+    <div class="actions">
+      <button class="btn ghost" id="export" disabled>⬇ Export CSV</button>
+      <button class="btn ghost" id="clear">Clear recording</button>
+    </div>
+
+    <div class="note warn"><span class="callout-label">Must be opened as a local file</span>
+      This page fetches a live feed, so it only works when you <b>open the file directly</b> in your browser (double-click <code>live-recorder.html</code>) or serve it locally — <b>not</b> from a sandboxed hosted artifact, which blocks outside connections. If the status shows a network error, your connection may be down or the exchange may be geo-restricting; try a different market.</div>
+    <div class="note"><span class="callout-label">Why crypto only</span>
+      Bitcoin/ETH/SOL have <b>free, keyless, real-time</b> feeds. Oil and S&amp;P <b>futures</b> data requires a paid CME subscription, so it isn't recordable for free here — practice the method on crypto candles, which trade 24/7 and behave like any other market for charting purposes. Recorded candles are saved in your browser and survive a refresh.</div>
+  </section>
+</main>
+<footer><div class="wrap">Education, not financial advice. Data via Coinbase Exchange public API. Recording candles does not predict the future — it just gives you real data to backtest honestly.</div></footer>
+
+<script>
+(function(){
+  var API='https://api.exchange.coinbase.com';
+  var $=function(id){return document.getElementById(id);};
+  var candles=[], product='BTC-USD', gran=300, timer=null, recording=false, lastPrice=null, prevPrice=null;
+
+  function key(){ return 'lcr_'+product+'_'+gran; }
+  function load(){ try{ candles=JSON.parse(localStorage.getItem(key()))||[]; }catch(e){ candles=[]; } if(!Array.isArray(candles))candles=[]; }
+  function save(){ try{ localStorage.setItem(key(), JSON.stringify(candles.slice(-2000))); }catch(e){} }
+
+  function fmtP(x){ return x.toLocaleString('en-US',{maximumFractionDigits: x>=100?2:4}); }
+  function setStatus(msg,cls){ var s=$('status'); s.textContent=msg; s.className='status'+(cls?' '+cls:''); }
+
+  // merge new candles (array of {t,o,h,l,c}) into store, dedupe by t, keep sorted
+  function merge(arr){
+    var map={}; candles.forEach(function(c){ map[c.t]=c; }); arr.forEach(function(c){ map[c.t]=c; });
+    candles=Object.keys(map).map(function(k){return map[k];}).sort(function(a,b){return a.t-b.t;});
+    save();
+  }
+
+  async function fetchHistory(){
+    var url=API+'/products/'+product+'/candles?granularity='+gran;
+    var r=await fetch(url); if(!r.ok) throw new Error('history HTTP '+r.status);
+    var raw=await r.json(); // [time, low, high, open, close, volume], newest first
+    var arr=raw.map(function(k){ return {t:k[0], o:k[3], h:k[2], l:k[1], c:k[4]}; });
+    merge(arr);
+  }
+  async function fetchTicker(){
+    var r=await fetch(API+'/products/'+product+'/ticker'); if(!r.ok) throw new Error('ticker HTTP '+r.status);
+    var j=await r.json(); return parseFloat(j.price);
+  }
+
+  async function tick(){
+    try{
+      await fetchHistory();
+      prevPrice=lastPrice; lastPrice=await fetchTicker();
+      render();
+      var now=new Date();
+      setStatus('● live — last update '+now.toLocaleTimeString()+' · '+candles.length+' candles stored', 'ok');
+      $('dot').className='dot live'; $('connlabel').textContent='recording '+product;
+    }catch(e){
+      setStatus('Network error: '+e.message+' — must be opened as a local file with internet access. Try another market.', 'err');
+      $('dot').className='dot';
+    }
+  }
+
+  function start(){
+    if(recording) return;
+    product=$('product').value; gran=parseInt($('gran').value,10); load();
+    recording=true; $('start').disabled=true; $('stop').disabled=false; $('export').disabled=false;
+    $('product').disabled=true; $('gran').disabled=true;
+    setStatus('connecting…');
+    tick();
+    // poll cadence: min(gran, 20s) — never hammer the API
+    var period=Math.min(gran, 20)*1000;
+    timer=setInterval(tick, Math.max(8000, period));
+  }
+  function stop(){
+    recording=false; if(timer){clearInterval(timer);timer=null;}
+    $('start').disabled=false; $('stop').disabled=true; $('product').disabled=false; $('gran').disabled=false;
+    $('dot').className='dot'; $('connlabel').textContent='paused';
+    setStatus('Stopped. '+candles.length+' candles saved. Export CSV or resume anytime.');
+  }
+
+  function exportCSV(){
+    if(!candles.length){ alert('No candles recorded yet.'); return; }
+    var lines=['date,open,high,low,close'];
+    candles.forEach(function(c){ lines.push(new Date(c.t*1000).toISOString()+','+c.o+','+c.h+','+c.l+','+c.c); });
+    var blob=new Blob([lines.join('\n')],{type:'text/csv'}), url=URL.createObjectURL(blob);
+    var a=document.createElement('a'); a.href=url; a.download=product+'_'+gran+'s_candles.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+  }
+  function clearRec(){ if(!candles.length) return; if(confirm('Clear recorded candles for '+product+' '+gran+'s?')){ candles=[]; save(); render(); } }
+
+  // ---- render ----
+  function cssv(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
+  function render(){
+    $('s-count').textContent=candles.length;
+    if(lastPrice!=null){ var pe=$('s-price'); pe.textContent='$'+fmtP(lastPrice); pe.className='v'+(prevPrice!=null?(lastPrice>=prevPrice?' up':' dn'):''); }
+    if(candles.length){
+      var last=candles[candles.length-1];
+      $('s-last').innerHTML='<span class="'+(last.c>=last.o?'':'')+'">'+fmtP(last.o)+' → '+fmtP(last.c)+'</span>';
+      $('s-last').style.color = last.c>=last.o?cssv('--long'):cssv('--short');
+      var mins=Math.round((candles[candles.length-1].t-candles[0].t)/60);
+      $('s-span').textContent = mins>=60?(Math.floor(mins/60)+'h '+(mins%60)+'m'):(mins+'m');
+    }
+    drawChart();
+  }
+  function drawChart(){
+    var cv=$('cv'),ctx=cv.getContext('2d'),DPR=Math.min(2,window.devicePixelRatio||1);
+    var w=cv.clientWidth||880,h=320; cv.width=w*DPR;cv.height=h*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);ctx.clearRect(0,0,w,h);
+    var view=candles.slice(-120); if(!view.length){ ctx.fillStyle=cssv('--ink-faint');ctx.font='13px '+cssv('--sans');ctx.fillText('No candles yet — press Start.',16,30); return; }
+    var lo=Infinity,hi=-Infinity; view.forEach(function(c){ if(c.l<lo)lo=c.l; if(c.h>hi)hi=c.h; }); if(lo===hi){lo*=0.999;hi*=1.001;}
+    var pad=10,padR=64,iw=w-pad-padR,ih=h-pad*2,N=view.length;
+    function X(i){return pad+(i+0.5)*(iw/N);} function Y(p){return pad+(1-(p-lo)/(hi-lo))*ih;}
+    // grid + price labels
+    ctx.strokeStyle=cssv('--hair');ctx.fillStyle=cssv('--ink-faint');ctx.font='10px '+cssv('--mono');ctx.textAlign='left';
+    for(var g=0;g<=4;g++){ var p=lo+(hi-lo)*g/4,y=Y(p); ctx.globalAlpha=.5;ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(w-padR,y);ctx.stroke();ctx.globalAlpha=1; ctx.fillText(fmtP(p),w-padR+5,y+3); }
+    var cw=Math.max(2,(iw/N)*0.6);
+    view.forEach(function(c,i){ var up=c.c>=c.o,col=up?cssv('--long'):cssv('--short'),x=X(i);
+      ctx.strokeStyle=col;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x,Y(c.h));ctx.lineTo(x,Y(c.l));ctx.stroke();
+      var yo=Y(c.o),yc=Y(c.c);ctx.fillStyle=col;ctx.fillRect(x-cw/2,Math.min(yo,yc),cw,Math.max(1.5,Math.abs(yc-yo))); });
+    // live price line
+    if(lastPrice!=null && lastPrice>=lo && lastPrice<=hi){ var y=Y(lastPrice); ctx.strokeStyle=cssv('--accent');ctx.setLineDash([4,3]);ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(w-padR,y);ctx.stroke();ctx.setLineDash([]);
+      ctx.fillStyle=cssv('--accent');ctx.fillRect(w-padR,y-8,padR-2,16);ctx.fillStyle='#111';ctx.font='10px '+cssv('--mono');ctx.fillText(fmtP(lastPrice),w-padR+4,y+3); }
+  }
+
+  $('start').addEventListener('click',start);
+  $('stop').addEventListener('click',stop);
+  $('export').addEventListener('click',exportCSV);
+  $('clear').addEventListener('click',clearRec);
+  $('product').addEventListener('change',function(){ product=$('product').value; load(); render(); });
+  $('gran').addEventListener('change',function(){ gran=parseInt($('gran').value,10); load(); render(); });
+  window.addEventListener('resize',drawChart);
+  load(); render();
+})();
+</script>
+</body></html>

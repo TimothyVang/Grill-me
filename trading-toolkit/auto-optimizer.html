@@ -1,0 +1,331 @@
+<title>Auto-Optimizer — Self-Searching Strategy Learner</title>
+<style>
+  :root{
+    --ground:#f6f3ec;--panel:#fffdf8;--panel-2:#efe9dc;--ink:#23222a;--ink-soft:#55525c;--ink-faint:#837f88;
+    --hair:#ddd6c6;--hair-strong:#c7bfab;--accent:#b07d24;--accent-bright:#c89544;--teal:#2f7a78;
+    --long:#3f8a5e;--short:#b34a44;--shadow:0 1px 2px rgba(30,25,15,.06),0 8px 30px rgba(30,25,15,.06);
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;--sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){:root{
+    --ground:#0e1016;--panel:#161922;--panel-2:#1d212b;--ink:#e9e6df;--ink-soft:#a9a6a0;--ink-faint:#726f6a;
+    --hair:#242833;--hair-strong:#333844;--accent:#cf9f52;--accent-bright:#e2b46a;--teal:#4fb0ad;
+    --long:#57bd80;--short:#df7d78;--shadow:0 1px 2px rgba(0,0,0,.3),0 12px 38px rgba(0,0,0,.4);
+  }}
+  :root[data-theme="light"]{--ground:#f6f3ec;--panel:#fffdf8;--panel-2:#efe9dc;--ink:#23222a;--ink-soft:#55525c;--ink-faint:#837f88;--hair:#ddd6c6;--hair-strong:#c7bfab;--accent:#b07d24;--accent-bright:#c89544;--teal:#2f7a78;--long:#3f8a5e;--short:#b34a44;--shadow:0 1px 2px rgba(30,25,15,.06),0 8px 30px rgba(30,25,15,.06);}
+  :root[data-theme="dark"]{--ground:#0e1016;--panel:#161922;--panel-2:#1d212b;--ink:#e9e6df;--ink-soft:#a9a6a0;--ink-faint:#726f6a;--hair:#242833;--hair-strong:#333844;--accent:#cf9f52;--accent-bright:#e2b46a;--teal:#4fb0ad;--long:#57bd80;--short:#df7d78;--shadow:0 1px 2px rgba(0,0,0,.3),0 12px 38px rgba(0,0,0,.4);}
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:960px;margin:0 auto;padding:0 20px;}
+  .mono{font-family:var(--mono);font-variant-numeric:tabular-nums;}
+  h1{font-size:clamp(1.8rem,4.5vw,2.7rem);letter-spacing:-.03em;margin:0;line-height:1.14;}
+  h2{font-size:1.12rem;margin:0 0 3px;}
+  p{margin:0 0 .9em;}
+  header.hero{border-bottom:1px solid var(--hair);background:radial-gradient(130% 100% at 88% -25%,color-mix(in srgb,var(--accent) 15%,transparent),transparent 60%),var(--ground);}
+  .hero-inner{padding:40px 0 28px;}
+  .kicker{font-family:var(--mono);font-size:.71rem;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:13px;display:flex;align-items:center;gap:10px;}
+  .kicker .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 22%,transparent);}
+  .hero p.lede{font-size:1.06rem;color:var(--ink-soft);max-width:66ch;margin:.4em 0 0;}
+  section{padding:22px 0;}
+  .seclab{font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 10px;}
+  .card{background:var(--panel);border:1px solid var(--hair);border-radius:14px;padding:16px 18px;box-shadow:var(--shadow);}
+  .controls{display:flex;gap:14px;flex-wrap:wrap;align-items:center;}
+  .seg{display:inline-flex;background:var(--panel-2);border:1px solid var(--hair);border-radius:10px;padding:3px;gap:3px;}
+  .seg button{font-family:var(--sans);font-size:.82rem;font-weight:620;padding:6px 12px;border-radius:7px;border:0;background:transparent;color:var(--ink-soft);cursor:pointer;}
+  .seg button[aria-pressed=true]{background:var(--accent);color:#fff;}
+  .fld{display:flex;flex-direction:column;gap:4px;}
+  .fld label{font-size:.7rem;letter-spacing:.03em;text-transform:uppercase;color:var(--ink-soft);font-weight:640;}
+  input[type=number]{font-family:var(--mono);font-size:.9rem;padding:7px 9px;border-radius:8px;border:1px solid var(--hair-strong);background:var(--ground);color:var(--ink);width:90px;}
+  input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  textarea{width:100%;font-family:var(--mono);font-size:.78rem;border:1px solid var(--hair-strong);border-radius:8px;background:var(--ground);color:var(--ink);padding:9px;margin-top:8px;}
+  .btn{font-family:var(--sans);font-size:.95rem;font-weight:660;padding:12px 26px;border-radius:11px;border:1px solid transparent;cursor:pointer;}
+  .btn.primary{background:var(--accent);color:#fff;} .btn.primary:hover{background:var(--accent-bright);}
+  .btn.ghost{background:transparent;border-color:var(--hair-strong);color:var(--ink-soft);font-size:.82rem;padding:7px 12px;} .btn.ghost:hover{border-color:var(--accent);color:var(--accent);}
+  .btn:disabled{opacity:.5;cursor:default;}
+  .muted{color:var(--ink-faint);font-size:.82rem;}
+
+  .cmp{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:6px;}
+  @media (max-width:620px){.cmp{grid-template-columns:1fr;}}
+  .panelbox{border:1px solid var(--hair);border-radius:12px;padding:14px 16px;background:var(--panel-2);}
+  .panelbox.train{border-left:3px solid var(--accent);}
+  .panelbox.test{border-left:3px solid var(--teal);}
+  .panelbox h3{margin:0 0 8px;font-size:.82rem;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft);}
+  .kv{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.86rem;padding:3px 0;}
+  .kv b{font-variant-numeric:tabular-nums;} .pos{color:var(--long);} .neg{color:var(--short);}
+
+  .verdict{margin-top:14px;border-radius:12px;padding:14px 16px;font-size:.92rem;border:1px solid var(--hair-strong);}
+  .verdict.good{background:color-mix(in srgb,var(--long) 12%,var(--panel));border-left:3px solid var(--long);}
+  .verdict.bad{background:color-mix(in srgb,var(--short) 12%,var(--panel));border-left:3px solid var(--short);}
+  .verdict.meh{background:var(--panel-2);border-left:3px solid var(--accent);}
+  .verdict b{color:var(--ink);}
+
+  canvas{display:block;width:100%;height:auto;border-radius:10px;}
+  .chart-wrap{background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:12px;margin-top:14px;box-shadow:var(--shadow);}
+  .chart-wrap .cl{font-size:.75rem;color:var(--ink-faint);margin:2px 2px 8px;display:flex;justify-content:space-between;}
+
+  .tbl-shell{overflow-x:auto;border:1px solid var(--hair);border-radius:10px;margin-top:12px;}
+  table{width:100%;border-collapse:collapse;font-size:.79rem;background:var(--panel);min-width:560px;}
+  th,td{padding:7px 9px;text-align:right;border-bottom:1px solid var(--hair);white-space:nowrap;}
+  th{font-size:.6rem;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-faint);background:var(--panel-2);}
+  th:first-child,td:first-child{text-align:left;}
+  td.mono{font-family:var(--mono);font-variant-numeric:tabular-nums;}
+  tr.best td{background:color-mix(in srgb,var(--accent) 10%,transparent);font-weight:600;}
+  .pill{font-family:var(--mono);font-size:.68rem;padding:1px 6px;border-radius:999px;background:var(--panel-2);color:var(--ink-soft);}
+
+  #prog{height:8px;background:var(--panel-2);border-radius:999px;overflow:hidden;margin-top:12px;display:none;}
+  #prog .bar{height:100%;width:0;background:var(--accent);transition:width .1s;}
+  .note{border-radius:12px;padding:14px 16px;margin:16px 0 0;font-size:.88rem;border:1px solid var(--hair-strong);background:var(--panel);border-left:3px solid var(--short);color:var(--ink-soft);}
+  .note.teal{border-left-color:var(--teal);}
+  .note b{color:var(--ink);}
+  .callout-label{font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:5px;color:var(--short);}
+  .note.teal .callout-label{color:var(--teal);}
+  footer{padding:26px 0 60px;color:var(--ink-faint);font-size:.8rem;}
+  .disc{border:1px solid var(--hair);border-radius:12px;padding:14px 16px;background:var(--panel);}
+  details{margin-top:12px;} summary{cursor:pointer;font-size:.85rem;color:var(--accent);font-weight:600;}
+</style>
+
+<header class="hero"><div class="wrap hero-inner">
+  <div class="kicker"><span class="dot"></span> Self-searching optimizer · in-sample vs out-of-sample · the honest kind of "learning"</div>
+  <h1>Auto-Optimizer</h1>
+  <p class="lede">It tries hundreds of rule combinations on its own, <b>learns</b> which performed best on a training slice of the data — then tests that winner on data it never saw. The gap between the two is the whole story: most "winners" are curve-fit noise that die out-of-sample. This tool shows you that, honestly.</p>
+</div></header>
+
+<main class="wrap">
+  <section>
+    <div class="card">
+      <div class="seclab">Setup</div>
+      <div class="controls">
+        <div class="fld"><label>Market (sample)</label>
+          <div class="seg" id="mktseg"><button data-v="oil" aria-pressed="true">Oil</button><button data-v="spx" aria-pressed="false">S&amp;P</button><button data-v="btc" aria-pressed="false">Bitcoin</button></div>
+        </div>
+        <div class="fld"><label>Candidates to try</label><input type="number" id="ncand" value="200" min="20" max="1500" step="20"></div>
+        <div class="fld"><label>Train / Test split %</label><input type="number" id="split" value="65" min="40" max="85" step="5"></div>
+        <div class="fld"><label>&nbsp;</label><button class="btn ghost" id="regen">↻ New data</button></div>
+        <div class="fld"><label>&nbsp;</label><button class="btn ghost" id="togglecsv">Paste CSV…</button></div>
+      </div>
+      <div id="csvbox" style="display:none;">
+        <textarea id="csv" rows="4" placeholder="Paste OHLC candles (header optional): date,open,high,low,close — any market/timeframe"></textarea>
+        <button class="btn ghost" id="loadcsv">Load pasted candles</button> <span class="muted" id="csvmsg"></span>
+      </div>
+      <div class="muted" id="datainfo" style="margin-top:8px;"></div>
+      <div style="margin-top:14px;"><button class="btn primary" id="learn">🧠 Learn (search strategies)</button></div>
+      <div id="prog"><div class="bar" id="progbar"></div></div>
+    </div>
+  </section>
+
+  <section id="out" style="display:none;">
+    <div class="card">
+      <div class="seclab">What it learned — best strategy by training score</div>
+      <div class="muted mono" id="bestsummary" style="margin-bottom:10px;"></div>
+      <div class="cmp">
+        <div class="panelbox train"><h3>In-sample (training) — what it optimized on</h3><div id="trainstats"></div></div>
+        <div class="panelbox test"><h3>Out-of-sample (test) — data it never saw</h3><div id="teststats"></div></div>
+      </div>
+      <div class="verdict" id="verdict"></div>
+
+      <div class="chart-wrap">
+        <div class="cl"><span>Equity curve of the best strategy (R) — <span class="mono">train</span> | <span class="mono">test</span></span><span class="mono" id="eqmeta"></span></div>
+        <canvas id="equity" width="900" height="200"></canvas>
+      </div>
+
+      <details open><summary>Leaderboard — top strategies by TRAINING score (watch the test column)</summary>
+        <div class="tbl-shell"><table><thead><tr><th>#</th><th>Strategy</th><th class="mono">Train trades</th><th class="mono">Train exp</th><th class="mono">Test trades</th><th class="mono">Test exp</th><th class="mono">Held up?</th></tr></thead><tbody id="lb"></tbody></table></div>
+      </details>
+      <details><summary>Best strategy config (JSON — paste into Strategy Lab)</summary><textarea id="cfgjson" rows="9" readonly></textarea></details>
+    </div>
+
+    <div class="note">
+      <span class="callout-label">Why the test column is usually a bloodbath</span>
+      The optimizer <b>guarantees</b> it will find a rule set that looks great in-sample — with hundreds of tries, some win by pure luck. That's <b>overfitting</b>, and it's not learning, it's memorizing noise. The only number that matters is <b>out-of-sample expectancy</b>. If the best training strategy is positive in-sample but ≤0 out-of-sample, it learned <em>nothing</em> useful. A strategy that stays positive on unseen data is worth a closer look — but even then it's a candidate for paper trading, never a guarantee.
+    </div>
+    <div class="note teal">
+      <span class="callout-label">This is the honest ceiling of "self-learning"</span>
+      This is real machine learning: search a space, score against data, validate out-of-sample. It is <b>not</b> a system that predicts the future or trades your money by itself. No amount of optimization changes that. Use it to <em>reject</em> bad ideas cheaply and to stay humble about the good ones.
+    </div>
+  </section>
+</main>
+
+<footer><div class="wrap"><div class="disc"><p style="margin:0;">Education, not financial advice. An optimizer fits rules to historical data; past performance never guarantees future results, and out-of-sample success on samples does not imply live profitability. Companion to the Strategy Lab.</p></div></div></footer>
+
+<script>
+(function(){
+  var MKT={ oil:{p:75,vol:0.010,dp:2}, spx:{p:6000,vol:0.007,dp:2}, btc:{p:100000,vol:0.022,dp:0} };
+  var mkt='oil', DATA=[], dataName='';
+  function $(id){return document.getElementById(id);}
+  function cssv(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
+
+  // ---- data ----
+  function randn(){return (Math.random()+Math.random()+Math.random()+Math.random()-2)/0.816;}
+  function genData(m){ var c=MKT[m],N=1000,p=c.p,out=[],regime=0,rc=0;
+    for(var i=0;i<N;i++){ if(rc<=0){regime=(Math.random()-0.5)*2;rc=20+Math.floor(Math.random()*40);} rc--;
+      var drift=regime*c.vol*0.35,o=p,cl=o*(1+drift+c.vol*randn());
+      var hi=Math.max(o,cl)*(1+Math.abs(c.vol*randn())*0.7), lo=Math.min(o,cl)*(1-Math.abs(c.vol*randn())*0.7);
+      out.push([o,hi,lo,cl]); p=cl; } return out; }
+  function parseCSV(txt){ var lines=txt.trim().split(/\r?\n/).filter(function(l){return l.trim();}); if(!lines.length)return null;
+    var out=[],start=0,idx={o:1,h:2,l:3,c:4},head=lines[0].toLowerCase();
+    if(/[a-z]/.test(head)){ var cols=head.split(/[,\t;]/).map(function(s){return s.trim();});
+      var fo=cols.indexOf('open'),fh=cols.indexOf('high'),fl=cols.indexOf('low'),fc=cols.indexOf('close');
+      if(fo>=0&&fh>=0&&fl>=0&&fc>=0)idx={o:fo,h:fh,l:fl,c:fc}; start=1;
+    } else { var first=lines[0].split(/[,\t;]/); idx=first.length>=5?{o:1,h:2,l:3,c:4}:{o:0,h:1,l:2,c:3}; }
+    for(var i=start;i<lines.length;i++){ var f=lines[i].split(/[,\t;]/), o=parseFloat(f[idx.o]),h=parseFloat(f[idx.h]),l=parseFloat(f[idx.l]),cc=parseFloat(f[idx.c]);
+      if([o,h,l,cc].every(function(x){return isFinite(x);}))out.push([o,h,l,cc]); }
+    return out.length>=60?out:null; }
+
+  // ---- indicators + engine (shared with Strategy Lab) ----
+  function ema(a,len){var k=2/(len+1),o=[],prev=a[0];for(var i=0;i<a.length;i++){prev=i?a[i]*k+prev*(1-k):a[0];o.push(prev);}return o;}
+  function rsiCalc(cl,len){var o=new Array(cl.length).fill(null),g=0,l=0,i;
+    for(i=1;i<=len&&i<cl.length;i++){var d=cl[i]-cl[i-1];g+=Math.max(0,d);l+=Math.max(0,-d);} g/=len;l/=len;
+    if(len<cl.length)o[len]=100-100/(1+g/(l||1e-9));
+    for(i=len+1;i<cl.length;i++){var d2=cl[i]-cl[i-1];g=(g*(len-1)+Math.max(0,d2))/len;l=(l*(len-1)+Math.max(0,-d2))/len;o[i]=100-100/(1+g/(l||1e-9));}
+    return o;}
+  function candleOK(C,i,type,dir){var o=C[i][0],h=C[i][1],l=C[i][2],c=C[i][3],body=Math.abs(c-o)||1e-9,upW=h-Math.max(o,c),loW=Math.min(o,c)-l;
+    if(type==='rejection')return dir>0?loW>=body*1.2:upW>=body*1.2;
+    if(type==='hammer')return dir>0?(loW>=body*2&&upW<=body*0.6):(upW>=body*2&&loW<=body*0.6);
+    if(type==='engulf'){if(i<1)return false;var po=C[i-1][0],pc=C[i-1][3];return dir>0?(c>o&&pc<po&&c>=po&&o<=pc):(c<o&&pc>po&&c<=po&&o>=pc);}
+    return true;}
+  function fibOK(C,i,lb,dir){if(i<lb)return false;var H=-Infinity,L=Infinity;for(var k=i-lb;k<i;k++){if(C[k][1]>H)H=C[k][1];if(C[k][2]<L)L=C[k][2];}var rng=H-L;if(rng<=0)return false;
+    if(dir>0){var pLow=H-0.72*rng,pHigh=H-0.5*rng;return C[i][2]<=pHigh&&C[i][3]>=pLow;} var b50=L+0.5*rng,b72=L+0.72*rng;return C[i][1]>=b50&&C[i][3]<=b72;}
+
+  // precompute indicators per config lazily via cache keyed by fast/slow/rsiLen
+  function backtest(C, cfg, off){ // off = index offset for absolute bar labels (not needed here)
+    var dir=cfg.direction==='long'?1:-1, closes=C.map(function(x){return x[3];});
+    var ef=ema(closes,cfg.entry.trend.fast), es=ema(closes,cfg.entry.trend.slow), rs=cfg.entry.rsi.on?rsiCalc(closes,cfg.entry.rsi.len):null;
+    var warm=Math.max(cfg.entry.trend.slow,cfg.entry.fib.lookback,cfg.entry.rsi.len)+1, trades=[], i=warm;
+    while(i<C.length){
+      var ok=true;
+      if(cfg.entry.trend.on)ok=ok&&(dir>0?ef[i]>es[i]:ef[i]<es[i]);
+      if(ok&&cfg.entry.fib.on)ok=ok&&fibOK(C,i,cfg.entry.fib.lookback,dir);
+      if(ok&&cfg.entry.candle.on)ok=ok&&candleOK(C,i,cfg.entry.candle.type,dir);
+      if(ok&&cfg.entry.rsi.on){var v=rs[i];ok=ok&&v!=null&&(cfg.entry.rsi.op==='lt'?v<cfg.entry.rsi.val:v>cfg.entry.rsi.val);}
+      if(!ok){i++;continue;}
+      var entry=C[i][3], stopDist=cfg.exit.stopUnit==='pct'?entry*cfg.exit.stop/100:cfg.exit.stop; if(stopDist<=0){i++;continue;}
+      var tgtDist=cfg.exit.targetUnit==='R'?cfg.exit.target*stopDist:(cfg.exit.targetUnit==='pct'?entry*cfg.exit.target/100:cfg.exit.target);
+      var stopP=dir>0?entry-stopDist:entry+stopDist, tgtP=dir>0?entry+tgtDist:entry-tgtDist, exitP=null,exitBar=null;
+      for(var j=i+1;j<C.length&&j<=i+cfg.exit.maxHold;j++){var hi=C[j][1],lo=C[j][2];
+        if(dir>0){if(lo<=stopP){exitP=stopP;exitBar=j;break;}if(hi>=tgtP){exitP=tgtP;exitBar=j;break;}}
+        else{if(hi>=stopP){exitP=stopP;exitBar=j;break;}if(lo<=tgtP){exitP=tgtP;exitBar=j;break;}}}
+      if(exitP==null){exitBar=Math.min(i+cfg.exit.maxHold,C.length-1);exitP=C[exitBar][3];}
+      var R=dir>0?(exitP-entry)/stopDist:(entry-exitP)/stopDist;
+      trades.push({ei:i,entry:entry,xi:exitBar,exit:exitP,R:R,dir:cfg.direction}); i=exitBar+1;
+    }
+    return trades;
+  }
+  function stats(trades){var n=trades.length;if(!n)return{n:0,exp:0,pf:0,net:0,win:0};var wins=0,gW=0,gL=0,sum=0;
+    trades.forEach(function(t){sum+=t.R;if(t.R>0){wins++;gW+=t.R;}else if(t.R<0)gL+=-t.R;});
+    return{n:n,exp:sum/n,net:sum,pf:gL>0?gW/gL:(gW>0?Infinity:0),win:wins/n*100};}
+
+  // ---- search space ----
+  function pick(a){return a[Math.floor(Math.random()*a.length)];}
+  function randConfig(){
+    var fast=pick([5,8,9,12]), slow=pick([20,21,34,50]); if(slow<=fast)slow=fast+12;
+    var cfg={ direction:pick(['long','short']),
+      entry:{ trend:{on:pick([true,true,false]),fast:fast,slow:slow},
+        fib:{on:pick([true,true,false]),lookback:pick([15,20,30])},
+        candle:{on:pick([true,false]),type:pick(['rejection','hammer','engulf'])},
+        rsi:{on:pick([true,false]),len:14,op:pick(['lt','gt']),val:pick([30,35,40,60,65,70])} },
+      exit:{ target:pick([1.5,2,2.5,3]),targetUnit:'R',stop:pick([0.3,0.5,0.8]),stopUnit:'pct',maxHold:pick([20,30,40]) } };
+    if(!cfg.entry.trend.on&&!cfg.entry.fib.on&&!cfg.entry.candle.on&&!cfg.entry.rsi.on)cfg.entry.fib.on=true;
+    return cfg;
+  }
+  function summarize(cfg){var e=cfg.entry,parts=[];
+    if(e.trend.on)parts.push('EMA'+e.trend.fast+'>'+e.trend.slow);
+    if(e.fib.on)parts.push('Fib'+e.fib.lookback);
+    if(e.candle.on)parts.push(e.candle.type);
+    if(e.rsi.on)parts.push('RSI'+(e.rsi.op==='lt'?'<':'>')+e.rsi.val);
+    return (cfg.direction==='long'?'▲':'▼')+' '+parts.join(' + ')+' → '+cfg.exit.target+'R / '+cfg.exit.stop+'% stop';
+  }
+
+  // ---- run search (async chunked so UI can paint progress) ----
+  var results=[], best=null;
+  function learn(){
+    if(!DATA.length){alert('Load data first.');return;}
+    var N=Math.max(20,Math.min(1500,+$('ncand').value||200));
+    var splitPct=Math.max(40,Math.min(85,+$('split').value||65));
+    var cut=Math.floor(DATA.length*splitPct/100);
+    var train=DATA.slice(0,cut), test=DATA.slice(cut);
+    results=[]; var seen={};
+    $('learn').disabled=true; $('prog').style.display='block'; $('progbar').style.width='0%';
+    var done=0;
+    function chunk(){
+      var end=Math.min(done+25,N);
+      for(;done<end;done++){
+        var cfg=randConfig(), key=JSON.stringify(cfg); if(seen[key]){continue;} seen[key]=1;
+        var trT=backtest(train,cfg), teT=backtest(test,cfg), sTr=stats(trT), sTe=stats(teT);
+        if(sTr.n>=12) results.push({cfg:cfg,tr:sTr,te:sTe,trades:trT.concat(teT.map(function(t){return {ei:t.ei+cut,entry:t.entry,xi:t.xi+cut,exit:t.exit,R:t.R,dir:t.dir};}))});
+      }
+      $('progbar').style.width=Math.round(done/N*100)+'%';
+      if(done<N){ setTimeout(chunk,0); } else { finish(cut); }
+    }
+    setTimeout(chunk,0);
+  }
+
+  function finish(cut){
+    $('learn').disabled=false; $('prog').style.display='none';
+    if(!results.length){ alert('No strategies produced enough trades — try more candidates or more data.'); return; }
+    // rank by TRAIN expectancy (that is what "learning" optimizes)
+    results.sort(function(a,b){ return b.tr.exp-a.tr.exp; });
+    best=results[0];
+    $('out').style.display='block';
+    $('bestsummary').textContent=summarize(best.cfg);
+    $('cfgjson').value=JSON.stringify(best.cfg,null,2);
+
+    function fillStats(el,s){ el.innerHTML=
+      '<div class="kv"><span>Trades</span><b>'+s.n+'</b></div>'+
+      '<div class="kv"><span>Win rate</span><b>'+Math.round(s.win)+'%</b></div>'+
+      '<div class="kv"><span>Expectancy</span><b class="'+(s.exp>0?'pos':(s.exp<0?'neg':''))+'">'+(s.exp>=0?'+':'−')+Math.abs(s.exp).toFixed(2)+'R</b></div>'+
+      '<div class="kv"><span>Net</span><b class="'+(s.net>0?'pos':(s.net<0?'neg':''))+'">'+(s.net>=0?'+':'−')+Math.abs(s.net).toFixed(1)+'R</b></div>'+
+      '<div class="kv"><span>Profit factor</span><b>'+(s.pf===Infinity?'∞':s.pf.toFixed(2))+'</b></div>'; }
+    fillStats($('trainstats'),best.tr); fillStats($('teststats'),best.te);
+
+    // verdict on best (train vs test)
+    var v=$('verdict'),tr=best.tr.exp,te=best.te.exp,cls,msg;
+    if(best.te.n<8){ cls='meh'; msg='<b>Not enough out-of-sample trades to judge ('+best.te.n+').</b> Use more data or a smaller test split. Without a real OOS sample, the training result is meaningless.'; }
+    else if(te>0.05 && te>=tr*0.5){ cls='good'; msg='<b>Held up out-of-sample.</b> Training +'+tr.toFixed(2)+'R → test +'+te.toFixed(2)+'R. Rare and encouraging — the pattern generalized past the data it was fit on. Still: this is a <em>candidate to paper-trade</em>, not a proven system. Re-run on new data to see if it survives again.'; }
+    else if(te<=0){ cls='bad'; msg='<b>Overfit — it learned nothing.</b> Looked great in training (+'+tr.toFixed(2)+'R) but lost out-of-sample ('+te.toFixed(2)+'R). This is the norm: with '+$('ncand').value+' tries, the optimizer found noise that flattered the training data. Do NOT trade this.'; }
+    else { cls='meh'; msg='<b>Faded out-of-sample.</b> +'+tr.toFixed(2)+'R training dropped to +'+te.toFixed(2)+'R on unseen data — a big chunk was curve-fit. Too fragile to trust; costs would likely erase what remains.'; }
+    v.className='verdict '+cls; v.innerHTML=msg;
+
+    // leaderboard: top by train, show test
+    var lb=$('lb'), top=results.slice(0,12);
+    lb.innerHTML=top.map(function(r,k){ var held=r.te.n>=8 && r.te.exp>0;
+      return '<tr class="'+(k===0?'best':'')+'"><td>'+(k+1)+'</td><td>'+summarize(r.cfg)+'</td>'+
+        '<td class="mono">'+r.tr.n+'</td><td class="mono pos">+'+r.tr.exp.toFixed(2)+'R</td>'+
+        '<td class="mono">'+r.te.n+'</td><td class="mono '+(r.te.exp>0?'pos':'neg')+'">'+(r.te.exp>=0?'+':'−')+Math.abs(r.te.exp).toFixed(2)+'R</td>'+
+        '<td class="mono">'+(r.te.n<8?'<span class="pill">n/a</span>':(held?'<span class="pos">yes</span>':'<span class="neg">no</span>'))+'</td></tr>';
+    }).join('');
+
+    drawEquity(best.trades, cut);
+    $('eqmeta').textContent='split at bar '+cut;
+  }
+
+  function drawEquity(trades,cut){
+    var cv=$('equity'),ctx=cv.getContext('2d'),DPR=Math.min(2,window.devicePixelRatio||1);
+    var w=cv.clientWidth||880,h=200; cv.width=w*DPR;cv.height=h*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);ctx.clearRect(0,0,w,h);
+    var sorted=trades.slice().sort(function(a,b){return a.xi-b.xi;});
+    var cum=0,curve=[{x:0,r:0}]; sorted.forEach(function(t){cum+=t.R;curve.push({x:t.xi,r:cum});});
+    var maxX=DATA.length-1, lo=Math.min.apply(null,curve.map(function(p){return p.r;})),hi=Math.max.apply(null,curve.map(function(p){return p.r;})); if(lo===hi){lo-=1;hi+=1;}
+    var pad=10,iw=w-pad*2,ih=h-pad*2;
+    function X(x){return pad+(x/maxX)*iw;} function Y(r){return pad+(1-(r-lo)/(hi-lo))*ih;}
+    // train/test shading
+    ctx.fillStyle=cssv('--accent'); ctx.globalAlpha=.05; ctx.fillRect(pad,pad,X(cut)-pad,ih); ctx.globalAlpha=1;
+    ctx.fillStyle=cssv('--teal'); ctx.globalAlpha=.06; ctx.fillRect(X(cut),pad,(w-pad)-X(cut),ih); ctx.globalAlpha=1;
+    // zero line
+    var zy=Y(0); ctx.strokeStyle=cssv('--hair-strong');ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(pad,zy);ctx.lineTo(w-pad,zy);ctx.stroke();ctx.setLineDash([]);
+    // split divider
+    ctx.strokeStyle=cssv('--ink-faint');ctx.globalAlpha=.6;ctx.beginPath();ctx.moveTo(X(cut),pad);ctx.lineTo(X(cut),h-pad);ctx.stroke();ctx.globalAlpha=1;
+    ctx.fillStyle=cssv('--ink-faint');ctx.font='9px '+cssv('--mono');ctx.fillText('train',pad+3,pad+10);ctx.fillText('test',X(cut)+4,pad+10);
+    // curve
+    var final=curve[curve.length-1].r,col=final>=0?cssv('--long'):cssv('--short');
+    ctx.beginPath(); curve.forEach(function(p,i){var x=X(p.x),y=Y(p.r);i?ctx.lineTo(x,y):ctx.moveTo(x,y);}); ctx.strokeStyle=col;ctx.lineWidth=2;ctx.stroke();
+  }
+
+  // ---- wiring ----
+  function setData(a,name){DATA=a;dataName=name;$('datainfo').innerHTML='Loaded <b>'+a.length+'</b> bars · <span class="mono">'+name+'</span>';}
+  function loadSample(){setData(genData(mkt),({oil:'Oil (sample)',spx:'S&P (sample)',btc:'Bitcoin (sample)'})[mkt]);}
+  document.querySelectorAll('#mktseg button').forEach(function(b){b.addEventListener('click',function(){document.querySelectorAll('#mktseg button').forEach(function(x){x.setAttribute('aria-pressed','false');});b.setAttribute('aria-pressed','true');mkt=b.getAttribute('data-v');loadSample();});});
+  $('regen').addEventListener('click',loadSample);
+  $('togglecsv').addEventListener('click',function(){var b=$('csvbox');b.style.display=b.style.display==='none'?'block':'none';});
+  $('loadcsv').addEventListener('click',function(){var d=parseCSV($('csv').value);if(!d){$('csvmsg').textContent='Could not parse — need ≥60 rows.';return;}$('csvmsg').textContent='✓ loaded';setData(d,'Pasted CSV');});
+  $('learn').addEventListener('click',learn);
+  loadSample();
+})();
+</script>

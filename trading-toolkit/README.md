@@ -19,10 +19,21 @@ Open any of them directly in a browser; there are no dependencies or build step.
 | [`setup-trainer.html`](setup-trainer.html) | A practice drill: get dealt randomized setups, decide **Take** or **Pass**, and get scored on the *decision* (not the outcome), with per-market accuracy tracking. |
 | [`trade-journal.html`](trade-journal.html) | Log trades and auto-compute P&L, R-multiple, win rate, expectancy, profit factor, an equity curve, and a **per-market breakdown**. Saves in the browser; exports CSV. |
 | [`strategy-lab.html`](strategy-lab.html) | A **programmable rule backtester**: define entry triggers (trend / Fibonacci golden zone / candle pattern / RSI) and a profit-target + stop exit, then run it over any market's candles — built-in samples or **pasted CSV** (e.g. a TradingView export). Reports win rate, expectancy, profit factor, max drawdown, and an equity curve in **R**, with a plain-English edge verdict. Every rule set serializes to reusable JSON. |
+| [`auto-optimizer.html`](auto-optimizer.html) | A **self-searching optimizer** ("machine learning, the honest kind"): it tries hundreds of rule combinations, learns the best on a training slice, then tests that winner on data it never saw. The in-sample vs **out-of-sample** gap exposes overfitting — most "winners" collapse on unseen data, and the tool says so. |
+| [`live-recorder.html`](live-recorder.html) ⚠️ *run locally* | **Records real market candles** from a live, keyless crypto feed (BTC / ETH / SOL via Coinbase), charts them live, and **exports CSV** to feed the Strategy Lab and Auto-Optimizer. Must be **opened as a local file** — hosted sandboxes block live network access. |
 
-The trainer and journal persist data in the browser's `localStorage`, so use the
-journal's **Export CSV** for backups. The Strategy Lab accepts real historical
-candles via CSV paste, so you can backtest your actual market and timeframe.
+The trainer, journal, and recorder persist data in the browser's `localStorage`,
+so use **Export CSV** for backups. The Strategy Lab and Auto-Optimizer accept real
+historical candles via CSV paste, so you can backtest your actual market and
+timeframe — including candles captured with the Live Recorder.
+
+### A note on `live-recorder.html`
+
+Unlike the other tools, the recorder makes live network requests, so a hosted
+artifact's security policy (CSP) blocks it. **Open the file directly in a
+browser** (double-click it) or serve it locally. It records **crypto** only —
+Bitcoin/ETH/SOL have free real-time feeds, whereas oil and S&P *futures* data
+requires a paid CME subscription.
 
 ## End-to-end demos
 
@@ -62,8 +73,10 @@ price scale changes.
 2. **TradingView Setup** — get the markets and indicators on screen (free).
 3. **Trade Replay** — see what a winning *and* losing setup looks like.
 4. **Setup Trainer** — drill recognizing the setup until it's automatic.
-5. **Strategy Lab** — turn a rule idea into evidence: backtest it on real candles before risking anything.
-6. **Journal** — record real paper trades and find out if you actually have an edge.
+5. **Live Recorder** — capture real candles from a live feed (run locally) to test on.
+6. **Strategy Lab** — turn a rule idea into evidence: backtest it on real candles before risking anything.
+7. **Auto-Optimizer** — let it search the rule space, then check whether the winner survives out-of-sample.
+8. **Journal** — record real paper trades and find out if you actually have an edge.
 
 ## Honest disclaimer
 
